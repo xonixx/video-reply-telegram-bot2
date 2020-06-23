@@ -1,4 +1,4 @@
-package com.cmlteam.video_reply_telegram_bot;
+package com.cmlteam.video_reply_telegram_bot2;
 
 import com.pengrad.telegrambot.model.Video;
 import com.pengrad.telegrambot.model.*;
@@ -74,10 +74,10 @@ public class BotPollingJob {
         //        log.info("offset: {}, nextOffset: {}", offset, videosPage.getNextOffset());
 
         List<InlineQueryResultCachedVideo> results = new ArrayList<>(videosPage.getVideos().size());
-        ListIterator<com.cmlteam.video_reply_telegram_bot.Video> it =
+        ListIterator<com.cmlteam.video_reply_telegram_bot2.Video> it =
             videosPage.getVideos().listIterator();
         while (it.hasNext()) {
-          com.cmlteam.video_reply_telegram_bot.Video v = it.next();
+          com.cmlteam.video_reply_telegram_bot2.Video v = it.next();
           results.add(
               new InlineQueryResultCachedVideo(
                   v.getFileUniqueId(),

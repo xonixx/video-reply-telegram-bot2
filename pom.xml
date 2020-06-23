@@ -4,11 +4,11 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.cmlteam</groupId>
-    <artifactId>video_reply_telegram_bot</artifactId>
+    <artifactId>video_reply_telegram_bot2</artifactId>
     <version>0.1.1</version>
     <packaging>jar</packaging>
 
-    <name>video_reply_telegram_bot</name>
+    <name>video_reply_telegram_bot2</name>
     <description>Video Reply Telegram Bot</description>
 
     <repositories>
@@ -107,7 +107,7 @@
     </dependencies>
 
     <build>
-        <finalName>video_reply_telegram_bot</finalName>
+        <finalName>video_reply_telegram_bot2</finalName>
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>

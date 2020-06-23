@@ -1,4 +1,4 @@
-package com.cmlteam.video_reply_telegram_bot;
+package com.cmlteam.video_reply_telegram_bot2;
 
 import org.junit.jupiter.api.Test;
 
