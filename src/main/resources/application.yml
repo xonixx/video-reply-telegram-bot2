@@ -1,0 +1,24 @@
+server:
+  address: 127.0.0.1
+  port: 8080
+
+spring:
+  profiles:
+    include: "videos"
+
+  main.web-application-type: none # don't run web context now since we use polling for bot
+
+#logging:
+#  level:
+#    org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping: TRACE
+
+elk:
+  host: elk.cmlteam.com
+  port: 10443
+  application: video_reply_telegram_bot
+
+telegram-bot:
+  admin-user: 0 # EXTERNAL
+  token: # EXTERNAL
+  backup-folder: # EXTERNAL
+  
