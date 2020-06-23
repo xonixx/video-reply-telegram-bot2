@@ -22,7 +22,7 @@ public class VideosBackupper {
   private final String backupFolder;
   private final String token;
   private final TelegramBotWrapper telegramBot;
-  private final VideosListProperties videosListProperties;
+  private final VideosListService videosListService;
 
   @PostConstruct
   void postConstruct() {
@@ -33,7 +33,7 @@ public class VideosBackupper {
 
   @Async
   public void startBackup(long userToInform) {
-    List<Video> videos = videosListProperties.getList();
+    List<Video> videos = videosListService.getList();
 
     int total = videos.size();
 

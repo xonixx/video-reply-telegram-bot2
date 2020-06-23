@@ -34,12 +34,12 @@ public class Beans {
   VideosBackupper videosBackupper(
       BotProperties botProperties,
       TelegramBotWrapper telegramBotWrapper,
-      VideosListProperties videosListProperties) {
+      VideosListService videosListService) {
     return new VideosBackupper(
         botProperties.getBackupFolder(),
         botProperties.getToken(),
         telegramBotWrapper,
-        videosListProperties);
+        videosListService);
   }
 
   @Bean

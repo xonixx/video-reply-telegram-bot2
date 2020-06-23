@@ -3,4 +3,4 @@ server:
   port: 8080
 
 elk:
-  application: video_reply_telegram_bot-prod
+  application: video_reply_telegram_bot2-prod
