@@ -50,15 +50,16 @@ public class BotPollingJob {
 
         String text = message.text();
         Video video = message.video();
+        User user = message.from();
 
         if ("/start".equals(text)) {
           telegramBot.execute(new SendMessage(chatId, "Please start from uploading video"));
         } else if (video != null) {
-          PersistedVideo persistedVideo = new PersistedVideo(video, messageId);
+          PersistedVideo persistedVideo = new PersistedVideo(video, user.id(), messageId);
           videosService.store(persistedVideo);
         }
 
-        if (isAdminUser(message.from())) {
+        if (isAdminUser(user)) {
           if ("/backup".equals(text)) {
             videosBackupper.startBackup(adminUser);
           } /*else {
@@ -111,12 +112,8 @@ public class BotPollingJob {
     telegramBot.execute(new ForwardMessage(adminUser, chatId, messageId));
   }
 
-  private boolean isAdminUser(Long chatId) {
-    return adminUser == chatId;
-  }
-
   private boolean isAdminUser(User user) {
-    return isAdminUser(user.id().longValue());
+    return adminUser == user.id().longValue();
   }
 
   private void displayVideoFileIds(Long chatId, Video video, Integer messageId) {
