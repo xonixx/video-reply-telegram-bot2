@@ -11,11 +11,14 @@ import com.pengrad.telegrambot.request.SendMessage;
 import com.pengrad.telegrambot.response.GetUpdatesResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.scheduling.annotation.Scheduled;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -51,12 +54,39 @@ public class BotPollingJob {
         String text = message.text();
         Video video = message.video();
         User user = message.from();
+        Integer userId = user.id();
 
         if ("/start".equals(text)) {
           telegramBot.execute(new SendMessage(chatId, "Please start from uploading video"));
         } else if (video != null) {
-          PersistedVideo persistedVideo = new PersistedVideo(video, user.id(), messageId);
+          PersistedVideo persistedVideo = new PersistedVideo(video, userId, messageId);
           videosService.store(persistedVideo);
+          telegramBot.execute(
+              new SendMessage(
+                  chatId,
+                  "Ok received video. "
+                      + "Please add keywords for it. Use \";\" as separator. "
+                      + "Only the first string before \";\" will show as title."));
+        } else if (StringUtils.isNotBlank(text)) {
+          List<String> keywords =
+              Stream.of(text.split(";")).map(String::trim).collect(Collectors.toList());
+          videosService
+              .getLastUploadedVideo(userId)
+              .ifPresentOrElse(
+                  persistedVideo -> {
+                    List<String> prevKeywords = persistedVideo.getKeywords();
+                    persistedVideo.setKeywords(keywords);
+                    videosService.store(persistedVideo);
+                    telegramBot.execute(
+                        new SendMessage(
+                            chatId,
+                            "Cool, the keywords "
+                                + (prevKeywords.isEmpty() ? "saved" : "updated")
+                                + ". Video is ready for inline search!"));
+                  },
+                  () ->
+                      telegramBot.execute(
+                          new SendMessage(chatId, "Please start from uploading video")));
         }
 
         if (isAdminUser(user)) {

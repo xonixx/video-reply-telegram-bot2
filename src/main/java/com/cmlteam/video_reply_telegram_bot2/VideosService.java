@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Slf4j
@@ -42,5 +43,9 @@ public class VideosService {
 
   public void store(PersistedVideo persistedVideo) {
     persistedVideoRepository.save(persistedVideo);
+  }
+
+  public Optional<PersistedVideo> getLastUploadedVideo(int userId) {
+    return persistedVideoRepository.getFirstByUserIdOrderByLastModifiedDateDesc(userId);
   }
 }
