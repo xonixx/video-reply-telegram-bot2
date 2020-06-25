@@ -48,8 +48,13 @@ public class BotPollingJob {
         Long chatId = message.chat().id();
         Integer messageId = message.messageId();
 
+        String text = message.text();
+
+        if ("/start".equals(text)) {
+          telegramBot.execute(new SendMessage(chatId, "Please start from uploading video"));
+        }
+
         if (isAdminUser(message.from())) {
-          String text = message.text();
           if ("/backup".equals(text)) {
             videosBackupper.startBackup(adminUser);
           } else {

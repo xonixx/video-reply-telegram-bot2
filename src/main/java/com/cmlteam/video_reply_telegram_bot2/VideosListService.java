@@ -37,6 +37,6 @@ public class VideosListService {
   }
 
   public List<Video> getList() {
-    throw new UnsupportedOperationException("TBD");
+    return List.of(); // TODO
   }
 }

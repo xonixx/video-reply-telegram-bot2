@@ -6,9 +6,9 @@ import org.springframework.context.annotation.ComponentScan;
 
 @SpringBootApplication
 @ComponentScan(basePackages = "com.cmlteam")
-public class VideoReplyBotApplication {
+public class VideoReplyBot2Application {
 
   public static void main(String[] args) {
-    SpringApplication.run(VideoReplyBotApplication.class, args);
+    SpringApplication.run(VideoReplyBot2Application.class, args);
   }
 }
