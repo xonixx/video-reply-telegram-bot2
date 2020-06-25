@@ -12,10 +12,10 @@ import java.util.Random;
 @Getter
 class VideosPage {
   private final int offsetIdx;
-  private final List<Video> videos;
+  private final List<PersistedVideo> persistedVideos;
   private final String nextOffset;
 
-  static VideosPage of(List<Video> allResults, int pageSize, @NonNull String offsetS) {
+  static VideosPage of(List<PersistedVideo> allResults, int pageSize, @NonNull String offsetS) {
     Offset offset = Offset.of(offsetS);
     Collections.shuffle(allResults, new Random(offset.seed));
     int total = allResults.size();

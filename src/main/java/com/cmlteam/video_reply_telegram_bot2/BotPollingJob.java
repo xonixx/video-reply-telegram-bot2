@@ -21,7 +21,7 @@ import java.util.ListIterator;
 @Slf4j
 public class BotPollingJob {
   private final TelegramBotWrapper telegramBot;
-  private final VideosListService videosListService;
+  private final VideosService videosService;
   private final VideosBackupper videosBackupper;
   private final JsonHelper jsonHelper;
   private final long adminUser;
@@ -49,20 +49,23 @@ public class BotPollingJob {
         Integer messageId = message.messageId();
 
         String text = message.text();
+        Video video = message.video();
 
         if ("/start".equals(text)) {
           telegramBot.execute(new SendMessage(chatId, "Please start from uploading video"));
+        } else if (video != null) {
+          PersistedVideo persistedVideo = new PersistedVideo(video, messageId);
+          videosService.store(persistedVideo);
         }
 
         if (isAdminUser(message.from())) {
           if ("/backup".equals(text)) {
             videosBackupper.startBackup(adminUser);
-          } else {
-            Video video = message.video();
-            if (video != null) {
-              displayVideoFileIds(chatId, video, messageId);
-            }
-          }
+          } /*else {
+              if (video != null) {
+                displayVideoFileIds(chatId, video, messageId);
+              }
+            }*/
         } else {
           forwardMessageToAdmin(messageId, chatId);
         }
@@ -74,15 +77,15 @@ public class BotPollingJob {
         String query = inlineQuery.query();
         String offset = inlineQuery.offset();
 
-        VideosPage videosPage = videosListService.searchVideo(query, offset);
+        VideosPage videosPage = videosService.searchVideo(query, offset);
 
         //        log.info("offset: {}, nextOffset: {}", offset, videosPage.getNextOffset());
 
-        List<InlineQueryResultCachedVideo> results = new ArrayList<>(videosPage.getVideos().size());
-        ListIterator<com.cmlteam.video_reply_telegram_bot2.Video> it =
-            videosPage.getVideos().listIterator();
+        List<InlineQueryResultCachedVideo> results =
+            new ArrayList<>(videosPage.getPersistedVideos().size());
+        ListIterator<PersistedVideo> it = videosPage.getPersistedVideos().listIterator();
         while (it.hasNext()) {
-          com.cmlteam.video_reply_telegram_bot2.Video v = it.next();
+          PersistedVideo v = it.next();
           results.add(
               new InlineQueryResultCachedVideo(
                   v.getFileUniqueId(),

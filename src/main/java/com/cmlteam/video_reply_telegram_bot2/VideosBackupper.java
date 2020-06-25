@@ -22,7 +22,7 @@ public class VideosBackupper {
   private final String backupFolder;
   private final String token;
   private final TelegramBotWrapper telegramBot;
-  private final VideosListService videosListService;
+  private final VideosService videosService;
 
   @PostConstruct
   void postConstruct() {
@@ -33,9 +33,9 @@ public class VideosBackupper {
 
   @Async
   public void startBackup(long userToInform) {
-    List<Video> videos = videosListService.getList();
+    List<PersistedVideo> persistedVideos = videosService.getList();
 
-    int total = videos.size();
+    int total = persistedVideos.size();
 
     telegramBot.execute(
         new SendMessage(userToInform, "Starting backup for " + total + " videos..."));
@@ -45,8 +45,8 @@ public class VideosBackupper {
     int newVideosCnt = 0;
 
     try {
-      for (Video video : videos) {
-        boolean isNew = backupVideo(video);
+      for (PersistedVideo persistedVideo : persistedVideos) {
+        boolean isNew = backupVideo(persistedVideo);
         if (isNew) {
           newVideosCnt++;
         }
@@ -68,8 +68,8 @@ public class VideosBackupper {
   }
 
   @SneakyThrows
-  private boolean backupVideo(Video video) {
-    GetFileResponse fileResponse = telegramBot.executeEx(new GetFile(video.getFileId()));
+  private boolean backupVideo(PersistedVideo persistedVideo) {
+    GetFileResponse fileResponse = telegramBot.executeEx(new GetFile(persistedVideo.getFileId()));
 
     File file = fileResponse.file();
 
@@ -77,9 +77,9 @@ public class VideosBackupper {
 
     String videoUrl = formFileDlUrl(filePath);
 
-    log.info("Downloading {} : {}... ", video.getFileId(), videoUrl);
+    log.info("Downloading {} : {}... ", persistedVideo.getFileId(), videoUrl);
 
-    java.io.File fileDestination = new java.io.File(backupFolder, video.getFileUniqueId() + ".mp4");
+    java.io.File fileDestination = new java.io.File(backupFolder, persistedVideo.getFileUniqueId() + ".mp4");
 
     if (fileDestination.exists()) {
       log.info("EXISTING");
