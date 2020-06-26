@@ -5,6 +5,10 @@ server:
 spring:
   main.web-application-type: none # don't run web context now since we use polling for bot
 
+  data:
+    mongodb:
+      database: video_reply_telegram_bot2
+
 #logging:
 #  level:
 #    org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping: TRACE

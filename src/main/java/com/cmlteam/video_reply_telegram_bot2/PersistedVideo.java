@@ -14,7 +14,7 @@ import java.util.List;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@Document
+@Document(value = "video")
 public class PersistedVideo {
   @Id private String id;
   private String fileId;
