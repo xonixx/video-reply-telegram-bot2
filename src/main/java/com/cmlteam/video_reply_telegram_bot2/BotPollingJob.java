@@ -109,11 +109,7 @@ public class BotPollingJob {
         if (isAdminUser(user)) {
           if ("/backup".equals(text)) {
             videosBackupper.startBackup(adminUser);
-          } /*else {
-              if (video != null) {
-                displayVideoFileIds(chatId, video, messageId);
-              }
-            }*/
+          }
         } else {
           forwardMessageToAdmin(messageId, chatId);
         }
