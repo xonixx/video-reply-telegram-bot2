@@ -48,4 +48,12 @@ public class VideosService {
   public Optional<PersistedVideo> getLastUploadedVideo(int userId) {
     return persistedVideoRepository.getFirstByUserIdOrderByLastModifiedDateDesc(userId);
   }
+
+  public Optional<PersistedVideo> getStoredVideo(int userId, int messageId) {
+    return persistedVideoRepository.getFirstByUserIdAndMessageId(userId, messageId);
+  }
+
+  public void deleteVideo(String id) {
+    persistedVideoRepository.deleteById(id);
+  }
 }

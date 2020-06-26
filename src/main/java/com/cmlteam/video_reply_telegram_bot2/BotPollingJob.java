@@ -17,6 +17,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -58,6 +59,24 @@ public class BotPollingJob {
 
         if ("/start".equals(text)) {
           telegramBot.execute(new SendMessage(chatId, "Please start from uploading video"));
+        } else if ("/delete".equals(text)) {
+          Message replyToMessage = message.replyToMessage();
+          if (replyToMessage != null && replyToMessage.video() != null) {
+            Optional<PersistedVideo> storedVideo =
+                videosService.getStoredVideo(userId, replyToMessage.messageId());
+            if (storedVideo.isPresent()) {
+              videosService.deleteVideo(storedVideo.get().getId());
+              telegramBot.execute(
+                  new SendMessage(chatId, "The video has been removed successfully!"));
+            } else {
+              telegramBot.execute(new SendMessage(chatId, "The video is already deleted"));
+            }
+          } else {
+            telegramBot.execute(
+                new SendMessage(
+                    chatId,
+                    "To use this command - reply to your own video in this chat that you want to delete with the /delete command"));
+          }
         } else if (video != null) {
           PersistedVideo persistedVideo = new PersistedVideo(video, userId, messageId);
           videosService.store(persistedVideo);
