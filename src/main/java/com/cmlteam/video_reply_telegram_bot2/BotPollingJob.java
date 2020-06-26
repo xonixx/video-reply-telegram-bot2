@@ -54,14 +54,15 @@ public class BotPollingJob {
         Video video = message.video();
         User user = message.from();
         Integer userId = user.id();
+        Message replyToMessage = message.replyToMessage();
+        Video replyToVideo = replyToMessage == null ? null : replyToMessage.video();
 
         if ("/start".equals(text)) {
           telegramBot.execute(new SendMessage(chatId, "Please start from uploading video"));
         } else if ("/delete".equals(text)) {
-          Message replyToMessage = message.replyToMessage();
-          if (replyToMessage != null && replyToMessage.video() != null) {
+          if (replyToVideo != null) {
             Optional<PersistedVideo> storedVideo =
-                videosService.getStoredVideo(userId, replyToMessage.messageId());
+                videosService.getStoredVideo(userId, replyToVideo.fileUniqueId());
             if (storedVideo.isPresent()) {
               videosService.deleteVideo(storedVideo.get().getId());
               telegramBot.execute(
@@ -78,32 +79,42 @@ public class BotPollingJob {
         } else if (video != null) {
           PersistedVideo persistedVideo = new PersistedVideo(video, userId, messageId);
           videosService.store(persistedVideo);
-          telegramBot.execute(
-              new SendMessage(
-                  chatId,
-                  "Ok received video. "
-                      + "Please add keywords for it. Use \";\" as separator. "
-                      + "Only the first string before \";\" will show as title."));
+          telegramBot.sendMarkdownV2(
+              chatId,
+              "Ok received video! "
+                  + "Please add keywords for it. To do this please **REPLY** to your own video with a text. "
+                  + "Use \";\" as separator. "
+                  + "Only the first string before \";\" will show as title.");
         } else if (StringUtils.isNotBlank(text)) {
-          List<String> keywords =
-              Stream.of(text.split(";")).map(String::trim).collect(Collectors.toList());
-          videosService
-              .getLastUploadedVideo(userId)
-              .ifPresentOrElse(
-                  persistedVideo -> {
-                    List<String> prevKeywords = persistedVideo.getKeywords();
-                    persistedVideo.setKeywords(keywords);
-                    videosService.store(persistedVideo);
-                    telegramBot.execute(
-                        new SendMessage(
-                            chatId,
-                            "Cool, the keywords "
-                                + (prevKeywords.isEmpty() ? "saved" : "updated")
-                                + ". Video is ready for inline search!"));
-                  },
-                  () ->
+          if (replyToVideo != null) {
+            List<String> keywords =
+                Stream.of(text.split(";")).map(String::trim).collect(Collectors.toList());
+            videosService
+                .getStoredVideo(userId, replyToVideo.fileUniqueId())
+                .ifPresentOrElse(
+                    persistedVideo -> {
+                      List<String> prevKeywords = persistedVideo.getKeywords();
+                      persistedVideo.setKeywords(keywords);
+                      videosService.store(persistedVideo);
                       telegramBot.execute(
-                          new SendMessage(chatId, "Please start from uploading video")));
+                          new SendMessage(
+                              chatId,
+                              "Cool, the keywords "
+                                  + (prevKeywords.isEmpty() ? "saved" : "updated")
+                                  + ". Video is ready for inline search!"));
+                    },
+                    () ->
+                        telegramBot.execute(
+                            new SendMessage(
+                                chatId,
+                                "The video you are trying to set keywords for is already deleted!")));
+          } else {
+            telegramBot.sendMarkdownV2(
+                chatId,
+                "⚠️ If you want to update keywords please **REPLY** to your own video with a text. "
+                    + "Use \";\" as separator. "
+                    + "*Only the first string before \";\" will show as title.*");
+          }
         }
 
         if (isAdminUser(user)) {

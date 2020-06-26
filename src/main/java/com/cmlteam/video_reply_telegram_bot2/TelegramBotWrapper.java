@@ -2,7 +2,9 @@ package com.cmlteam.video_reply_telegram_bot2;
 
 import com.pengrad.telegrambot.TelegramBot;
 import com.pengrad.telegrambot.model.Update;
+import com.pengrad.telegrambot.model.request.ParseMode;
 import com.pengrad.telegrambot.request.BaseRequest;
+import com.pengrad.telegrambot.request.SendMessage;
 import com.pengrad.telegrambot.response.BaseResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -53,5 +55,10 @@ public class TelegramBotWrapper {
           requestStr);
     }
     return response;
+  }
+
+  public void sendMarkdownV2(long chatId, String text) {
+    telegramBot.execute(
+        new SendMessage(chatId, text.replace(".", "\\.")).parseMode(ParseMode.MarkdownV2));
   }
 }
