@@ -12,4 +12,6 @@ public interface PersistedVideoRepository extends MongoRepository<PersistedVideo
   Optional<PersistedVideo> getFirstByUserIdAndMessageId(int userId, int messageId);
 
   Optional<PersistedVideo> getFirstByUserIdAndFileUniqueId(int userId, String fileUniqueId);
+
+  Optional<PersistedVideo> getFirstByFileUniqueId(String fileUniqueId);
 }

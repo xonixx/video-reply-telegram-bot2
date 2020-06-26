@@ -66,11 +66,11 @@ public class BotPollingJob {
             if (storedVideo.isPresent()) {
               videosService.deleteVideo(storedVideo.get().getId());
               telegramBot.execute(
-                  new SendMessage(chatId, "The video has been removed successfully!"));
+                  new SendMessage(chatId, "✔️ The video has been removed successfully!"));
             } else {
               telegramBot.execute(
                   new SendMessage(
-                      chatId, "The video doesn't exist or you don't have access to it!"));
+                      chatId, "❌ The video doesn't exist or you don't have access to it!"));
             }
           } else {
             telegramBot.execute(
@@ -79,13 +79,22 @@ public class BotPollingJob {
                     "To use this command - reply to your own video in this chat that you want to delete with the /delete command"));
           }
         } else if (video != null) {
-          PersistedVideo persistedVideo = new PersistedVideo(video, userId, messageId);
-          videosService.store(persistedVideo);
-          telegramBot.sendMarkdownV2(
-              chatId,
-              "Ok received video! "
-                  + "Please add keywords for it. To do this please *REPLY* to your own video with a text. "
-                  + "Use \";\" as separator. Only the first string before \";\" will show as title.");
+          Optional<PersistedVideo> storedVideo = videosService.getStoredVideo(video.fileUniqueId());
+          if (storedVideo.isPresent()) {
+            telegramBot.execute(
+                new SendMessage(
+                    chatId,
+                    "⚠️ The same video already exists with keywords: "
+                        + String.join("; ", storedVideo.get().getKeywords())));
+          } else {
+            PersistedVideo persistedVideo = new PersistedVideo(video, userId, messageId);
+            videosService.store(persistedVideo);
+            telegramBot.sendMarkdownV2(
+                chatId,
+                "✔️ Ok received video! "
+                    + "Please add keywords for it. To do this please *REPLY* to your own video with a text. "
+                    + "Use \";\" as separator. Only the first string before \";\" will show as title.");
+          }
         } else if (StringUtils.isNotBlank(text)) {
           if (replyToVideo != null) {
             List<String> keywords =
@@ -100,7 +109,7 @@ public class BotPollingJob {
                       telegramBot.execute(
                           new SendMessage(
                               chatId,
-                              "Cool, the keywords "
+                              "✔️ Cool, the keywords "
                                   + (prevKeywords.isEmpty() ? "saved" : "updated")
                                   + ". Video is ready for inline search!"));
                     },
@@ -108,7 +117,7 @@ public class BotPollingJob {
                         telegramBot.execute(
                             new SendMessage(
                                 chatId,
-                                "The video you are trying to set keywords for doesn't exist or you don't have access to it!")));
+                                "❌ The video you are trying to set keywords for doesn't exist or you don't have access to it!")));
           } else {
             telegramBot.sendMarkdownV2(
                 chatId,

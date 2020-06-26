@@ -59,6 +59,10 @@ public class VideosService {
     return persistedVideoRepository.getFirstByUserIdAndFileUniqueId(userId, fileUniqueId);
   }
 
+  public Optional<PersistedVideo> getStoredVideo(String fileUniqueId) {
+    return persistedVideoRepository.getFirstByFileUniqueId(fileUniqueId);
+  }
+
   public void deleteVideo(String id) {
     persistedVideoRepository.deleteById(id);
   }
