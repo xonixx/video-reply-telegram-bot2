@@ -1,6 +1,5 @@
 package com.cmlteam.video_reply_telegram_bot2;
 
-import com.pengrad.telegrambot.model.Video;
 import com.pengrad.telegrambot.model.*;
 import com.pengrad.telegrambot.model.request.InlineQueryResult;
 import com.pengrad.telegrambot.model.request.InlineQueryResultCachedVideo;
@@ -16,7 +15,6 @@ import org.springframework.scheduling.annotation.Scheduled;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -133,18 +131,10 @@ public class BotPollingJob {
 
         List<InlineQueryResultCachedVideo> results =
             new ArrayList<>(videosPage.getPersistedVideos().size());
-        ListIterator<PersistedVideo> it = videosPage.getPersistedVideos().listIterator();
-        while (it.hasNext()) {
-          PersistedVideo v = it.next();
+        for (PersistedVideo v : videosPage.getPersistedVideos()) {
           results.add(
               new InlineQueryResultCachedVideo(
-                  v.getFileUniqueId(),
-                  v.getFileId(),
-                  //                  (isAdminUser(inlineQuery.from())
-                  //                          ? (videosPage.getOffsetIdx() + it.nextIndex()) + ". "
-                  //                          : "") // enumerate videos for admin
-                  //                      +
-                  v.getKeywords().get(0)));
+                  v.getFileUniqueId(), v.getFileId(), v.getKeywords().get(0)));
         }
 
         telegramBot.execute(

@@ -33,7 +33,7 @@ public class VideosBackupper {
 
   @Async
   public void startBackup(long userToInform) {
-    List<PersistedVideo> persistedVideos = videosService.getList();
+    List<PersistedVideo> persistedVideos = videosService.getAllVideos();
 
     int total = persistedVideos.size();
 

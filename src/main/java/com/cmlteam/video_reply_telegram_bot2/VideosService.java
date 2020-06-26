@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.PostConstruct;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -24,21 +25,22 @@ public class VideosService {
    * @return list of file_ids of videos stored in telegram
    */
   VideosPage searchVideo(@NonNull String query, @NonNull String offset) {
-    List<PersistedVideo> matchedResults = List.of(); //
-    //        videosListProperties.getList().stream()
-    //            .filter(v -> v.matches(searchStringMatcher, query))
-    //            .collect(Collectors.toList());
+    List<PersistedVideo> matchedResults =
+        getAllVideos().stream()
+            .filter(v -> v.matches(searchStringMatcher, query))
+            .collect(Collectors.toList());
 
     return VideosPage.of(matchedResults, MAX_ALLOWED_INLINE_RESULTS, offset);
   }
 
   @PostConstruct
   public void postConstruct() {
-    log.info("Videos: " + getList().size());
+    log.info("Videos: " + getAllVideos().size());
   }
 
-  public List<PersistedVideo> getList() {
-    return List.of(); // TODO
+  // TODO make this more efficient than this
+  public List<PersistedVideo> getAllVideos() {
+    return persistedVideoRepository.findAll();
   }
 
   public void store(PersistedVideo persistedVideo) {
