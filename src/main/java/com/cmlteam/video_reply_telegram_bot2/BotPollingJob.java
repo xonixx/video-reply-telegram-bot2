@@ -63,14 +63,17 @@ public class BotPollingJob {
           if (replyToVideo != null) {
             Optional<PersistedVideo> storedVideo =
                 videosService.getStoredVideo(userId, replyToVideo.fileUniqueId());
+
             if (storedVideo.isPresent()) {
               videosService.deleteVideo(storedVideo.get().getId());
               telegramBot.execute(
-                  new SendMessage(chatId, "✔️ The video has been removed successfully!"));
+                  new SendMessage(
+                      chatId, Emoji.SUCCESS.msg("The video has been removed successfully!")));
             } else {
               telegramBot.execute(
                   new SendMessage(
-                      chatId, "❌ The video doesn't exist or you don't have access to it!"));
+                      chatId,
+                      Emoji.ERROR.msg("The video doesn't exist or you don't have access to it!")));
             }
           } else {
             telegramBot.execute(
@@ -84,16 +87,18 @@ public class BotPollingJob {
             telegramBot.execute(
                 new SendMessage(
                     chatId,
-                    "⚠️ The same video already exists with keywords: "
-                        + String.join("; ", storedVideo.get().getKeywords())));
+                    Emoji.WARN.msg(
+                        " The same video already exists with keywords: "
+                            + String.join("; ", storedVideo.get().getKeywords()))));
           } else {
             PersistedVideo persistedVideo = new PersistedVideo(video, userId, messageId);
             videosService.store(persistedVideo);
             telegramBot.sendMarkdownV2(
                 chatId,
-                "✔️ Ok received video! "
-                    + "Please add keywords for it. To do this please *REPLY* to your own video with a text. "
-                    + "Use \";\" as separator. Only the first string before \";\" will show as title.");
+                Emoji.SUCCESS.msg(
+                    "Ok received video! "
+                        + "Please add keywords for it. To do this please *REPLY* to your own video with a text. "
+                        + "Use \";\" as separator. Only the first string before \";\" will show as title."));
           }
         } else if (StringUtils.isNotBlank(text)) {
           if (replyToVideo != null) {
@@ -109,20 +114,23 @@ public class BotPollingJob {
                       telegramBot.execute(
                           new SendMessage(
                               chatId,
-                              "✔️ Cool, the keywords "
-                                  + (prevKeywords.isEmpty() ? "saved" : "updated")
-                                  + ". Video is ready for inline search!"));
+                              Emoji.SUCCESS.msg(
+                                  "Cool, the keywords "
+                                      + (prevKeywords.isEmpty() ? "saved" : "updated")
+                                      + ". Video is ready for inline search!")));
                     },
                     () ->
                         telegramBot.execute(
                             new SendMessage(
                                 chatId,
-                                "❌ The video you are trying to set keywords for doesn't exist or you don't have access to it!")));
+                                Emoji.ERROR.msg(
+                                    "The video you are trying to set keywords for doesn't exist or you don't have access to it!"))));
           } else {
             telegramBot.sendMarkdownV2(
                 chatId,
-                "⚠️ If you want to update keywords please *REPLY* to your own video with a text. "
-                    + "Use \";\" as separator. Only the first string before \";\" will show as title.");
+                Emoji.WARN.msg(
+                    ("If you want to update keywords please *REPLY* to your own video with a text. "
+                        + "Use \";\" as separator. Only the first string before \";\" will show as title.")));
           }
         }
 
