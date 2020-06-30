@@ -57,9 +57,9 @@ public class BotPollingJob {
         Message replyToMessage = message.replyToMessage();
         Video replyToVideo = replyToMessage == null ? null : replyToMessage.video();
 
-        if ("/start".equals(text)) {
+        if (BotCommand.START.is(text)) {
           telegramBot.execute(new SendMessage(chatId, "Please start from uploading video"));
-        } else if ("/delete".equals(text)) {
+        } else if (BotCommand.DELETE.is(text)) {
           if (replyToVideo != null) {
             Optional<PersistedVideo> storedVideo =
                 videosService.getStoredVideo(userId, replyToVideo.fileUniqueId());
@@ -125,7 +125,7 @@ public class BotPollingJob {
                                 chatId,
                                 Emoji.ERROR.msg(
                                     "The video you are trying to set keywords for doesn't exist or you don't have access to it!"))));
-          } else {
+          } else if (!isAdminUser(user) || !BotCommand.isAdminCommand(text)) {
             telegramBot.sendMarkdownV2(
                 chatId,
                 Emoji.WARN.msg(
@@ -135,7 +135,7 @@ public class BotPollingJob {
         }
 
         if (isAdminUser(user)) {
-          if ("/backup".equals(text)) {
+          if (BotCommand.BACKUP.is(text)) {
             videosBackupper.startBackup(adminUser);
           }
         } else {
