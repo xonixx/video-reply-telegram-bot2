@@ -1,8 +1,12 @@
 #!/usr/bin/env bash
 
+set -e
+
 APP=video_reply_telegram_bot2
 USER=apps1
 SERV=prod.cmlteam.com
+
+JAVA_HOME=/home/xonix/soft/graalvm-ce-java11-20.1.0
 
 echo
 echo "BUILD..."

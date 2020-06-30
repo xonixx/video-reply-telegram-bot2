@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum Emoji {
   SUCCESS("✅"),
-  WARN("⚠"),
+  WARN("⚠️"),
   ERROR("❌");
 
   private final String C;
