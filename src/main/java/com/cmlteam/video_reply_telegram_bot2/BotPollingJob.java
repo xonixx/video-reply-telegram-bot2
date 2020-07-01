@@ -78,7 +78,11 @@ public class BotPollingJob {
           }
         } else if (video != null) {
           if (!"video/mp4".equals(video.mimeType())) {
-            telegramBot.sendText(chatId, Emoji.WARN.msg("Sorry, only .MP4 videos are supported!"));
+            telegramBot.sendText(
+                chatId,
+                Emoji.WARN.msg(
+                    "Sorry, only .MP4 videos are supported! "
+                        + "Please try again with other file."));
           } else {
             Optional<PersistedVideo> storedVideo =
                 videosService.getStoredVideo(video.fileUniqueId());
@@ -129,6 +133,12 @@ public class BotPollingJob {
                     ("If you want to update keywords please *REPLY* to your own video with a text. "
                         + "Use \";\" as separator. Only the first string before \";\" will show as title.")));
           }
+        } else {
+          telegramBot.sendText(
+              chatId,
+              Emoji.WARN.msg(
+                  "The uploaded document doesn't look like .MP4 video. "
+                      + "Please try again with other file."));
         }
 
         if (isAdminUser(user)) {
