@@ -6,7 +6,6 @@ import com.pengrad.telegrambot.model.request.InlineQueryResultCachedVideo;
 import com.pengrad.telegrambot.request.AnswerInlineQuery;
 import com.pengrad.telegrambot.request.ForwardMessage;
 import com.pengrad.telegrambot.request.GetUpdates;
-import com.pengrad.telegrambot.request.SendMessage;
 import com.pengrad.telegrambot.response.GetUpdatesResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -44,7 +43,6 @@ public class BotPollingJob {
       log.info("Received:\n" + jsonHelper.toPrettyString(update));
 
       Message message = update.message();
-      //      telegramBot.execute(new SendMessage(message.chat().id(), "" + update.updateId()));
 
       if (message != null) {
         Long chatId = message.chat().id();
@@ -58,7 +56,7 @@ public class BotPollingJob {
         Video replyToVideo = replyToMessage == null ? null : replyToMessage.video();
 
         if (BotCommand.START.is(text)) {
-          telegramBot.execute(new SendMessage(chatId, "Please start from uploading video"));
+          telegramBot.sendText(chatId, "Please start from uploading video");
         } else if (BotCommand.DELETE.is(text)) {
           if (replyToVideo != null) {
             Optional<PersistedVideo> storedVideo =
@@ -66,39 +64,40 @@ public class BotPollingJob {
 
             if (storedVideo.isPresent()) {
               videosService.deleteVideo(storedVideo.get().getId());
-              telegramBot.execute(
-                  new SendMessage(
-                      chatId, Emoji.SUCCESS.msg("The video has been removed successfully!")));
+              telegramBot.sendText(
+                  chatId, Emoji.SUCCESS.msg("The video has been removed successfully!"));
             } else {
-              telegramBot.execute(
-                  new SendMessage(
-                      chatId,
-                      Emoji.ERROR.msg("The video doesn't exist or you don't have access to it!")));
+              telegramBot.sendText(
+                  chatId,
+                  Emoji.ERROR.msg("The video doesn't exist or you don't have access to it!"));
             }
           } else {
-            telegramBot.execute(
-                new SendMessage(
-                    chatId,
-                    "To use this command - reply to your own video in this chat that you want to delete with the /delete command"));
+            telegramBot.sendText(
+                chatId,
+                "To use this command - reply to your own video in this chat that you want to delete with the /delete command");
           }
         } else if (video != null) {
-          Optional<PersistedVideo> storedVideo = videosService.getStoredVideo(video.fileUniqueId());
-          if (storedVideo.isPresent()) {
-            telegramBot.execute(
-                new SendMessage(
-                    chatId,
-                    Emoji.WARN.msg(
-                        " The same video already exists with keywords: "
-                            + String.join("; ", storedVideo.get().getKeywords()))));
+          if (!"video/mp4".equals(video.mimeType())) {
+            telegramBot.sendText(chatId, Emoji.WARN.msg("Sorry, only .MP4 videos are supported!"));
           } else {
-            PersistedVideo persistedVideo = new PersistedVideo(video, userId, messageId);
-            videosService.store(persistedVideo);
-            telegramBot.sendMarkdownV2(
-                chatId,
-                Emoji.SUCCESS.msg(
-                    "Ok received video! "
-                        + "Please add keywords for it. To do this please *REPLY* to your own video with a text. "
-                        + "Use \";\" as separator. Only the first string before \";\" will show as title."));
+            Optional<PersistedVideo> storedVideo =
+                videosService.getStoredVideo(video.fileUniqueId());
+            if (storedVideo.isPresent()) {
+              telegramBot.sendText(
+                  chatId,
+                  Emoji.WARN.msg(
+                      " The same video already exists with keywords: "
+                          + String.join("; ", storedVideo.get().getKeywords())));
+            } else {
+              PersistedVideo persistedVideo = new PersistedVideo(video, userId, messageId);
+              videosService.store(persistedVideo);
+              telegramBot.sendMarkdownV2(
+                  chatId,
+                  Emoji.SUCCESS.msg(
+                      "Ok received video! "
+                          + "Please add keywords for it. To do this please *REPLY* to your own video with a text. "
+                          + "Use \";\" as separator. Only the first string before \";\" will show as title."));
+            }
           }
         } else if (StringUtils.isNotBlank(text)) {
           if (replyToVideo != null) {
@@ -111,20 +110,18 @@ public class BotPollingJob {
                       List<String> prevKeywords = persistedVideo.getKeywords();
                       persistedVideo.setKeywords(keywords);
                       videosService.store(persistedVideo);
-                      telegramBot.execute(
-                          new SendMessage(
-                              chatId,
-                              Emoji.SUCCESS.msg(
-                                  "Cool, the keywords "
-                                      + (prevKeywords.isEmpty() ? "saved" : "updated")
-                                      + ". Video is ready for inline search!")));
+                      telegramBot.sendText(
+                          chatId,
+                          Emoji.SUCCESS.msg(
+                              "Cool, the keywords "
+                                  + (prevKeywords.isEmpty() ? "saved" : "updated")
+                                  + ". Video is ready for inline search!"));
                     },
                     () ->
-                        telegramBot.execute(
-                            new SendMessage(
-                                chatId,
-                                Emoji.ERROR.msg(
-                                    "The video you are trying to set keywords for doesn't exist or you don't have access to it!"))));
+                        telegramBot.sendText(
+                            chatId,
+                            Emoji.ERROR.msg(
+                                "The video you are trying to set keywords for doesn't exist or you don't have access to it!")));
           } else if (!isAdminUser(user) || !BotCommand.isAdminCommand(text)) {
             telegramBot.sendMarkdownV2(
                 chatId,
@@ -177,21 +174,5 @@ public class BotPollingJob {
 
   private boolean isAdminUser(User user) {
     return adminUser == user.id().longValue();
-  }
-
-  private void displayVideoFileIds(Long chatId, Video video, Integer messageId) {
-    String fileId = video.fileId();
-    String fileUniqueId = video.fileUniqueId();
-    //        telegramBot.execute(new SendVideo(message.chat().id(), fileId).caption(fileId));
-    telegramBot.execute(
-        new SendMessage(
-            chatId,
-            "file-id: \""
-                + fileId
-                + "\"\nfile-unique-id: \""
-                + fileUniqueId
-                + "\"\nmessage-id: \""
-                + messageId
-                + "\""));
   }
 }

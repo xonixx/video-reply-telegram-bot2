@@ -62,4 +62,8 @@ public class TelegramBotWrapper {
         new SendMessage(chatId, text.replaceAll("([.!])", "\\\\$1"))
             .parseMode(ParseMode.MarkdownV2));
   }
+
+  public void sendText(long chatId, String text) {
+    execute(new SendMessage(chatId, text));
+  }
 }
