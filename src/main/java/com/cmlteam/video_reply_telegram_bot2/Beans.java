@@ -1,5 +1,8 @@
 package com.cmlteam.video_reply_telegram_bot2;
 
+import com.cmlteam.telegram_bot_common.ErrorReporter;
+import com.cmlteam.telegram_bot_common.JsonHelper;
+import com.cmlteam.telegram_bot_common.TelegramBotWrapper;
 import com.pengrad.telegrambot.TelegramBot;
 import com.pengrad.telegrambot.request.GetMe;
 import com.pengrad.telegrambot.response.GetMeResponse;
@@ -32,26 +35,26 @@ public class Beans {
 
   @Bean
   VideosBackupper videosBackupper(
-          BotProperties botProperties,
-          TelegramBotWrapper telegramBotWrapper,
-          VideosService videosService) {
+      BotProperties botProperties,
+      TelegramBotWrapper telegramBotWrapper,
+      VideosService videosService) {
     return new VideosBackupper(
         botProperties.getBackupFolder(),
         botProperties.getToken(),
         telegramBotWrapper,
-            videosService);
+        videosService);
   }
 
   @Bean
   public BotPollingJob botPollingJob(
-          BotProperties botProperties,
-          TelegramBotWrapper telegramBotWrapper,
-          VideosService videosService,
-          VideosBackupper videosBackupper,
-          JsonHelper jsonHelper) {
+      BotProperties botProperties,
+      TelegramBotWrapper telegramBotWrapper,
+      VideosService videosService,
+      VideosBackupper videosBackupper,
+      JsonHelper jsonHelper) {
     return new BotPollingJob(
         telegramBotWrapper,
-            videosService,
+        videosService,
         videosBackupper,
         jsonHelper,
         botProperties.getAdminUser());

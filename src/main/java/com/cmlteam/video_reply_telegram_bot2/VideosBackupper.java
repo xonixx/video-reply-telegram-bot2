@@ -1,5 +1,6 @@
 package com.cmlteam.video_reply_telegram_bot2;
 
+import com.cmlteam.telegram_bot_common.TelegramBotWrapper;
 import com.cmlteam.util.Util;
 import com.pengrad.telegrambot.model.File;
 import com.pengrad.telegrambot.request.GetFile;
@@ -79,7 +80,8 @@ public class VideosBackupper {
 
     log.info("Downloading {} : {}... ", persistedVideo.getFileId(), videoUrl);
 
-    java.io.File fileDestination = new java.io.File(backupFolder, persistedVideo.getFileUniqueId() + ".mp4");
+    java.io.File fileDestination =
+        new java.io.File(backupFolder, persistedVideo.getFileUniqueId() + ".mp4");
 
     if (fileDestination.exists()) {
       log.info("EXISTING");
