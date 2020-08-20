@@ -1,6 +1,7 @@
 package com.cmlteam.video_reply_telegram_bot2;
 
 import com.cmlteam.telegram_bot_common.Emoji;
+import com.cmlteam.telegram_bot_common.LogHelper;
 import com.cmlteam.telegram_bot_common.TelegramBotWrapper;
 import com.cmlteam.telegram_bot_common.JsonHelper;
 import com.pengrad.telegrambot.model.*;
@@ -28,6 +29,7 @@ public class BotPollingJob {
   private final VideosService videosService;
   private final VideosBackupper videosBackupper;
   private final JsonHelper jsonHelper;
+  private final LogHelper logHelper;
   private final long adminUser;
 
   private final GetUpdates getUpdates = new GetUpdates();
@@ -43,6 +45,8 @@ public class BotPollingJob {
     List<Update> updates = updatesResponse.updates();
 
     for (Update update : updates) {
+      logHelper.captureLogParams(update);
+
       log.info("Received:\n" + jsonHelper.toPrettyString(update));
 
       Message message = update.message();
