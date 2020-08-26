@@ -163,7 +163,7 @@ public class BotPollingJob {
         String query = inlineQuery.query();
         String offset = inlineQuery.offset();
 
-        VideosPage videosPage = videosService.searchVideo(query, offset);
+        VideosPage videosPage = videosService.searchVideo(inlineQuery.from().id(), query, offset);
 
         //        log.info("offset: {}, nextOffset: {}", offset, videosPage.getNextOffset());
 
