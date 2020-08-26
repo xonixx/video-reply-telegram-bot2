@@ -57,11 +57,14 @@ public class Beans {
       JsonHelper jsonHelper,
       LogHelper logHelper) {
     return new BotPollingJob(
-        telegramBotWrapper,
-        videosService,
-        videosBackupper,
-        jsonHelper,
-        logHelper,
-        botProperties.getAdminUser());
+        telegramBotWrapper, videosService, videosBackupper, jsonHelper, logHelper, botProperties);
+  }
+
+  @Bean
+  public VideosService videosService(
+      BotProperties botProperties,
+      PersistedVideoRepository persistedVideoRepository,
+      SearchStringMatcher searchStringMatcher) {
+    return new VideosService(botProperties, persistedVideoRepository, searchStringMatcher);
   }
 }

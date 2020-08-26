@@ -30,7 +30,7 @@ public class BotPollingJob {
   private final VideosBackupper videosBackupper;
   private final JsonHelper jsonHelper;
   private final LogHelper logHelper;
-  private final long adminUser;
+  private final AdminUserChecker adminUserChecker;
 
   private final GetUpdates getUpdates = new GetUpdates();
 
@@ -133,7 +133,7 @@ public class BotPollingJob {
                             chatId,
                             Emoji.ERROR.msg(
                                 "The video you are trying to set keywords for doesn't exist or you don't have access to it!")));
-          } else if (!isAdminUser(user) || !BotCommand.isAdminCommand(text)) {
+          } else if (!adminUserChecker.isAdmin(user) || !BotCommand.isAdminCommand(text)) {
             telegramBot.sendMarkdownV2(
                 chatId,
                 Emoji.WARN.msg(
@@ -148,9 +148,9 @@ public class BotPollingJob {
                       + "Please try again with other file."));
         }
 
-        if (isAdminUser(user)) {
+        if (adminUserChecker.isAdmin(user)) {
           if (BotCommand.BACKUP.is(text)) {
-            videosBackupper.startBackup(adminUser);
+            videosBackupper.startBackup(userId);
           }
         } else {
           forwardMessageToAdmin(messageId, chatId);
@@ -186,10 +186,6 @@ public class BotPollingJob {
   }
 
   private void forwardMessageToAdmin(Integer messageId, Long chatId) {
-    telegramBot.execute(new ForwardMessage(adminUser, chatId, messageId));
-  }
-
-  private boolean isAdminUser(User user) {
-    return adminUser == user.id().longValue();
+    telegramBot.execute(new ForwardMessage(adminUserChecker.getAdminUser(), chatId, messageId));
   }
 }

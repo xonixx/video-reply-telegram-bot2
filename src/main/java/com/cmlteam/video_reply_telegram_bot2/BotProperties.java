@@ -1,5 +1,6 @@
 package com.cmlteam.video_reply_telegram_bot2;
 
+import com.pengrad.telegrambot.model.User;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -14,8 +15,18 @@ import javax.validation.constraints.Positive;
 @Validated
 @Getter
 @Setter
-public class BotProperties {
+public class BotProperties implements AdminUserChecker {
   private @Positive long adminUser;
   private @NotBlank String token;
   private @NotBlank String backupFolder;
+
+  @Override
+  public boolean isAdmin(long userId) {
+    return adminUser == userId;
+  }
+
+  @Override
+  public boolean isAdmin(User user) {
+    return isAdmin(user.id().longValue());
+  }
 }

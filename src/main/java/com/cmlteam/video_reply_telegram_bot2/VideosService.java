@@ -10,10 +10,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-@Service
 @Slf4j
 @RequiredArgsConstructor
 public class VideosService {
+  private final AdminUserChecker adminUserChecker;
   private final PersistedVideoRepository persistedVideoRepository;
   private final SearchStringMatcher searchStringMatcher;
 
@@ -67,7 +67,9 @@ public class VideosService {
   }
 
   public Optional<PersistedVideo> getStoredVideo(int userId, String fileUniqueId) {
-    return persistedVideoRepository.getFirstByUserIdAndFileUniqueId(userId, fileUniqueId);
+    return adminUserChecker.isAdmin(userId)
+        ? getStoredVideo(fileUniqueId)
+        : persistedVideoRepository.getFirstByUserIdAndFileUniqueId(userId, fileUniqueId);
   }
 
   public Optional<PersistedVideo> getStoredVideo(String fileUniqueId) {
