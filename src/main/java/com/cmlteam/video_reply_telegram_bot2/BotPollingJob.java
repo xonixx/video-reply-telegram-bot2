@@ -68,7 +68,7 @@ public class BotPollingJob {
           handleDeleteVideo(chatId, userId, replyToVideo);
         } else if (video != null) {
           if (replyToVideo != null) {
-            handleReUploadVideo(chatId, userId, messageId, replyToVideo, video);
+            handleReplaceVideo(chatId, userId, messageId, replyToVideo, video);
           } else {
             handleUploadVideo(chatId, userId, messageId, video);
           }
@@ -146,7 +146,7 @@ public class BotPollingJob {
     }
   }
 
-  private void handleReUploadVideo(
+  private void handleReplaceVideo(
       Long chatId, Integer userId, Integer messageId, Video replyToVideo, Video video) {
     videosService
         .getStoredVideo(userId, replyToVideo.fileUniqueId())
@@ -158,13 +158,16 @@ public class BotPollingJob {
 
               videosService.store(persistedVideo);
 
-              telegramBot.sendText(chatId, Emoji.SUCCESS.msg("Cool, the video is updated."));
+              telegramBot.sendMarkdownV2(
+                  chatId,
+                  Emoji.SUCCESS.msg(
+                      "Cool, the video is replaced. _Please note, the inline search results can be still cached for some time!_"));
             },
             () ->
                 telegramBot.sendText(
                     chatId,
                     Emoji.ERROR.msg(
-                        "The video you are trying to update doesn't exist or you don't have access to it!")));
+                        "The video you are trying to replace doesn't exist or you don't have access to it!")));
   }
 
   private void handleSetKeywords(Long chatId, Integer userId, Video replyToVideo, String text) {
