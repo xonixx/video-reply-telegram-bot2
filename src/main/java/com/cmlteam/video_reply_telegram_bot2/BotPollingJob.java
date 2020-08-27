@@ -67,7 +67,11 @@ public class BotPollingJob {
         } else if (BotCommand.DELETE.is(text)) {
           handleDeleteVideo(chatId, userId, replyToVideo);
         } else if (video != null) {
-          handleUploadVideo(chatId, userId, messageId, video);
+          if (replyToVideo != null) {
+            handleReUploadVideo(chatId, userId, messageId, replyToVideo, video);
+          } else {
+            handleUploadVideo(chatId, userId, messageId, video);
+          }
         } else if (StringUtils.isNotBlank(text)) {
           handleSetKeywords(chatId, userId, replyToVideo, text);
         } else {
@@ -118,28 +122,49 @@ public class BotPollingJob {
   private void handleUploadVideo(Long chatId, Integer userId, Integer messageId, Video video) {
     if (!"video/mp4".equals(video.mimeType())) {
       telegramBot.sendText(
-              chatId,
-              Emoji.WARN.msg(
-                      "Sorry, only .MP4 videos are supported! " + "Please try again with other file."));
+          chatId,
+          Emoji.WARN.msg(
+              "Sorry, only .MP4 videos are supported! " + "Please try again with other file."));
     } else {
       Optional<PersistedVideo> storedVideo = videosService.getStoredVideo(video.fileUniqueId());
       if (storedVideo.isPresent()) {
         telegramBot.sendText(
-                chatId,
-                Emoji.WARN.msg(
-                        " The same video already exists with keywords: "
-                                + String.join("; ", storedVideo.get().getKeywords())));
+            chatId,
+            Emoji.WARN.msg(
+                " The same video already exists with keywords: "
+                    + String.join("; ", storedVideo.get().getKeywords())));
       } else {
         PersistedVideo persistedVideo = new PersistedVideo(video, userId, messageId);
         videosService.store(persistedVideo);
         telegramBot.sendMarkdownV2(
-                chatId,
-                Emoji.SUCCESS.msg(
-                        "Ok received video! "
-                                + "Please add keywords for it. To do this please *REPLY* to your own video with a text. "
-                                + "Use \";\" as separator. Only the first string before \";\" will show as title."));
+            chatId,
+            Emoji.SUCCESS.msg(
+                "Ok received video! "
+                    + "Please add keywords for it. To do this please *REPLY* to your own video with a text. "
+                    + "Use \";\" as separator. Only the first string before \";\" will show as title."));
       }
     }
+  }
+
+  private void handleReUploadVideo(
+      Long chatId, Integer userId, Integer messageId, Video replyToVideo, Video video) {
+    videosService
+        .getStoredVideo(userId, replyToVideo.fileUniqueId())
+        .ifPresentOrElse(
+            persistedVideo -> {
+              persistedVideo.setFileId(video.fileId());
+              persistedVideo.setFileUniqueId(video.fileUniqueId());
+              persistedVideo.setMessageId(messageId);
+
+              videosService.store(persistedVideo);
+
+              telegramBot.sendText(chatId, Emoji.SUCCESS.msg("Cool, the video is updated."));
+            },
+            () ->
+                telegramBot.sendText(
+                    chatId,
+                    Emoji.ERROR.msg(
+                        "The video you are trying to update doesn't exist or you don't have access to it!")));
   }
 
   private void handleSetKeywords(Long chatId, Integer userId, Video replyToVideo, String text) {
