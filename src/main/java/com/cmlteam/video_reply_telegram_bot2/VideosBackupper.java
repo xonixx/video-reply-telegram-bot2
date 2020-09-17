@@ -44,12 +44,18 @@ public class VideosBackupper {
     long t0 = System.currentTimeMillis();
 
     int newVideosCnt = 0;
+    int errVideosCnt = 0;
 
     try {
       for (PersistedVideo persistedVideo : persistedVideos) {
-        boolean isNew = backupVideo(persistedVideo);
-        if (isNew) {
-          newVideosCnt++;
+        try {
+          boolean isNew = backupVideo(persistedVideo);
+          if (isNew) {
+            newVideosCnt++;
+          }
+        } catch (Exception ex) {
+          log.error("", ex);
+          errVideosCnt++;
         }
       }
     } catch (Exception ex) {
@@ -57,15 +63,15 @@ public class VideosBackupper {
       telegramBot.execute(new SendMessage(userToInform, "Exception: " + ex.toString()));
     }
 
-    telegramBot.execute(
-        new SendMessage(
-            userToInform,
-            "Downloaded "
-                + newVideosCnt
-                + " new out of total "
-                + total
-                + " videos in "
-                + Util.renderDurationFromStart(t0)));
+    telegramBot.sendMarkdownV2(
+        userToInform,
+        "Downloaded "
+            + newVideosCnt
+            + " new out of total "
+            + total
+            + " videos in "
+            + Util.renderDurationFromStart(t0)
+            + (errVideosCnt > 0 ? ". **" + errVideosCnt + " videos failed to download!**" : ""));
   }
 
   @SneakyThrows
