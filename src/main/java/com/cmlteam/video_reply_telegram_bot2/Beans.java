@@ -2,12 +2,15 @@ package com.cmlteam.video_reply_telegram_bot2;
 
 import com.cmlteam.telegram_bot_common.ErrorReporter;
 import com.cmlteam.telegram_bot_common.JsonHelper;
+import com.cmlteam.telegram_bot_common.LogHelper;
 import com.cmlteam.telegram_bot_common.TelegramBotWrapper;
 import com.pengrad.telegrambot.TelegramBot;
 import com.pengrad.telegrambot.request.GetMe;
 import com.pengrad.telegrambot.response.GetMeResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import java.util.List;
 
 @Configuration
 public class Beans {
@@ -24,7 +27,7 @@ public class Beans {
   @Bean
   ErrorReporter errorReporter(
       TelegramBot telegramBot, JsonHelper jsonHelper, BotProperties botProperties) {
-    return new ErrorReporter(telegramBot, jsonHelper, botProperties.getAdminUser());
+    return new ErrorReporter(telegramBot, jsonHelper, List.of(botProperties.getAdminUser()));
   }
 
   @Bean
@@ -51,12 +54,17 @@ public class Beans {
       TelegramBotWrapper telegramBotWrapper,
       VideosService videosService,
       VideosBackupper videosBackupper,
-      JsonHelper jsonHelper) {
+      JsonHelper jsonHelper,
+      LogHelper logHelper) {
     return new BotPollingJob(
-        telegramBotWrapper,
-        videosService,
-        videosBackupper,
-        jsonHelper,
-        botProperties.getAdminUser());
+        telegramBotWrapper, videosService, videosBackupper, jsonHelper, logHelper, botProperties);
+  }
+
+  @Bean
+  public VideosService videosService(
+      BotProperties botProperties,
+      PersistedVideoRepository persistedVideoRepository,
+      SearchStringMatcher searchStringMatcher) {
+    return new VideosService(botProperties, persistedVideoRepository, searchStringMatcher);
   }
 }

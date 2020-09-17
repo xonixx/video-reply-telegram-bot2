@@ -10,24 +10,35 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-@Service
 @Slf4j
 @RequiredArgsConstructor
 public class VideosService {
+  private final AdminUserChecker adminUserChecker;
   private final PersistedVideoRepository persistedVideoRepository;
   private final SearchStringMatcher searchStringMatcher;
 
   public static final int MAX_ALLOWED_INLINE_RESULTS = 50;
 
   /**
+   * @param userId TG user ID
    * @param query user query string
    * @param offset offset identifier for pagination
    * @return list of file_ids of videos stored in telegram
    */
-  VideosPage searchVideo(@NonNull String query, @NonNull String offset) {
+  VideosPage searchVideo(int userId, @NonNull String query, @NonNull String offset) {
+    boolean isMy = false;
+    if ("my".equals(query) || query.startsWith("my ")) {
+      isMy = true;
+      query = query.replaceFirst("^my", "").trim();
+    }
+
+    final String query_ = query;
+    final boolean isMy_ = isMy;
+
     List<PersistedVideo> matchedResults =
         getAllVideos().stream()
-            .filter(v -> v.matches(searchStringMatcher, query))
+            .filter(
+                v -> v.matches(searchStringMatcher, query_) && (!isMy_ || v.getUserId() == userId))
             .collect(Collectors.toList());
 
     return VideosPage.of(matchedResults, MAX_ALLOWED_INLINE_RESULTS, offset);
@@ -56,7 +67,9 @@ public class VideosService {
   }
 
   public Optional<PersistedVideo> getStoredVideo(int userId, String fileUniqueId) {
-    return persistedVideoRepository.getFirstByUserIdAndFileUniqueId(userId, fileUniqueId);
+    return adminUserChecker.isAdmin(userId)
+        ? getStoredVideo(fileUniqueId)
+        : persistedVideoRepository.getFirstByUserIdAndFileUniqueId(userId, fileUniqueId);
   }
 
   public Optional<PersistedVideo> getStoredVideo(String fileUniqueId) {
