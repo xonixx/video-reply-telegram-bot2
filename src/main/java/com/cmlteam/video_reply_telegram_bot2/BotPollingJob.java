@@ -4,6 +4,7 @@ import com.cmlteam.telegram_bot_common.Emoji;
 import com.cmlteam.telegram_bot_common.LogHelper;
 import com.cmlteam.telegram_bot_common.TelegramBotWrapper;
 import com.cmlteam.telegram_bot_common.JsonHelper;
+import com.cmlteam.util.Util;
 import com.pengrad.telegrambot.model.*;
 import com.pengrad.telegrambot.model.request.InlineQueryResult;
 import com.pengrad.telegrambot.model.request.InlineQueryResultCachedVideo;
@@ -131,9 +132,9 @@ public class BotPollingJob {
           chatId,
           Emoji.WARN.msg(
               "Sorry, video is too big! Only videos up to "
-                  + maxFileSize
-                  + " bytes are allowed, yours is "
-                  + video.fileSize()
+                  + Util.humanReadableByteCount(maxFileSize, true)
+                  + " are allowed, yours is "
+                  + Util.humanReadableByteCount(video.fileSize(), true)
                   + ". Please try again with other file."));
     } else {
       Optional<PersistedVideo> storedVideo = videosService.getStoredVideo(video.fileUniqueId());
