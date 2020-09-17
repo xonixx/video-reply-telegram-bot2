@@ -57,7 +57,13 @@ public class Beans {
       JsonHelper jsonHelper,
       LogHelper logHelper) {
     return new BotPollingJob(
-        telegramBotWrapper, videosService, videosBackupper, jsonHelper, logHelper, botProperties);
+        telegramBotWrapper,
+        videosService,
+        videosBackupper,
+        jsonHelper,
+        logHelper,
+        botProperties,
+        botProperties.getMaxFileSize());
   }
 
   @Bean

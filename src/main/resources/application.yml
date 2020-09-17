@@ -22,4 +22,5 @@ telegram-bot:
   admin-user: 0 # EXTERNAL
   token: # EXTERNAL
   backup-folder: # EXTERNAL
+  max-file-size: 10_000_000 # 10 MB
   

@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.validation.annotation.Validated;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
 
 @Configuration
@@ -19,6 +20,7 @@ public class BotProperties implements AdminUserChecker {
   private @Positive long adminUser;
   private @NotBlank String token;
   private @NotBlank String backupFolder;
+  private @NotNull Integer maxFileSize;
 
   @Override
   public boolean isAdmin(long userId) {

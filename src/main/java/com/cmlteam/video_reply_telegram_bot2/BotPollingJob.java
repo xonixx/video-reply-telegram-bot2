@@ -31,6 +31,7 @@ public class BotPollingJob {
   private final JsonHelper jsonHelper;
   private final LogHelper logHelper;
   private final AdminUserChecker adminUserChecker;
+  private final int maxFileSize;
 
   private final GetUpdates getUpdates = new GetUpdates();
 
@@ -124,7 +125,16 @@ public class BotPollingJob {
       telegramBot.sendText(
           chatId,
           Emoji.WARN.msg(
-              "Sorry, only .MP4 videos are supported! " + "Please try again with other file."));
+              "Sorry, only .MP4 videos are supported! Please try again with other file."));
+    } else if (video.fileSize() > maxFileSize) {
+      telegramBot.sendText(
+          chatId,
+          Emoji.WARN.msg(
+              "Sorry, video is too big! Only videos up to "
+                  + maxFileSize
+                  + " bytes are allowed, yours is "
+                  + video.fileSize()
+                  + ". Please try again with other file."));
     } else {
       Optional<PersistedVideo> storedVideo = videosService.getStoredVideo(video.fileUniqueId());
       if (storedVideo.isPresent()) {
