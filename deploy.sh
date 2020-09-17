@@ -6,8 +6,7 @@ APP=video_reply_telegram_bot2
 USER=apps1
 SERV=prod.cmlteam.com
 
-export JAVA_HOME=/home/xonix/soft/graalvm-ce-java11-20.1.0
-#export JAVA_HOME=/home/xonix/.sdkman/candidates/java/current
+export JAVA_HOME=/home/xonix/.sdkman/candidates/java/current
 
 echo
 echo "BUILD..."
