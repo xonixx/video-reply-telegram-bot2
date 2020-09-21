@@ -37,23 +37,14 @@ public class YoutubeDownloader {
 
     YoutubeDLResponse response = YoutubeDL.execute(request);
 
-    String resultInfo =
-        "exit code = "
-            + response.getExitCode()
-            + "\n"
-            + "elapsed = "
-            + response.getElapsedTime()
-            + "\n"
-            + "stdOut = "
-            + response.getOut();
     if (response.getExitCode() != 0) {
-      throw new YoutubeDLException(resultInfo);
+      throw new YoutubeDLException(getResultInfo(response));
     }
 
     File resultFile = new File(directory, fname);
 
     if (!resultFile.isFile()) {
-      throw new YoutubeDLException("Result file missing. " + resultInfo);
+      throw new YoutubeDLException("Result file missing. " + getResultInfo(response));
     }
     try {
       youtubeDlResultHandler.handleResultFile(resultFile, response.getElapsedTime());
@@ -65,8 +56,19 @@ public class YoutubeDownloader {
       }
     }
   }
-}
 
-interface YoutubeDlResultHandler {
-  void handleResultFile(File file, int elapsedTime);
+  private String getResultInfo(YoutubeDLResponse response) {
+    return "exit code = "
+        + response.getExitCode()
+        + "\n"
+        + "elapsed = "
+        + response.getElapsedTime()
+        + "\n"
+        + "stdOut = "
+        + response.getOut();
+  }
+
+  interface YoutubeDlResultHandler {
+    void handleResultFile(File file, int elapsedTime);
+  }
 }
