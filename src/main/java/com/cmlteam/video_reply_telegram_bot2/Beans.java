@@ -55,7 +55,8 @@ public class Beans {
       VideosService videosService,
       VideosBackupper videosBackupper,
       JsonHelper jsonHelper,
-      LogHelper logHelper) {
+      LogHelper logHelper,
+      YoutubeDownloader youtubeDownloader) {
     return new BotPollingJob(
         telegramBotWrapper,
         videosService,
@@ -63,7 +64,8 @@ public class Beans {
         jsonHelper,
         logHelper,
         botProperties,
-        botProperties.getMaxFileSize());
+        botProperties.getMaxFileSize(),
+        youtubeDownloader);
   }
 
   @Bean

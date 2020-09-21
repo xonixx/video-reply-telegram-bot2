@@ -107,6 +107,11 @@
             <artifactId>commons-io</artifactId>
             <version>2.6</version>
         </dependency>
+        <dependency>
+            <groupId>com.github.sapher</groupId>
+            <artifactId>youtubedl-java</artifactId>
+            <version>1.1</version>
+        </dependency>
     </dependencies>
 
     <build>

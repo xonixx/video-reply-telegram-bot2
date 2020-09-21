@@ -1,9 +1,9 @@
 package com.cmlteam.video_reply_telegram_bot2;
 
 import com.cmlteam.telegram_bot_common.Emoji;
+import com.cmlteam.telegram_bot_common.JsonHelper;
 import com.cmlteam.telegram_bot_common.LogHelper;
 import com.cmlteam.telegram_bot_common.TelegramBotWrapper;
-import com.cmlteam.telegram_bot_common.JsonHelper;
 import com.cmlteam.util.Util;
 import com.pengrad.telegrambot.model.*;
 import com.pengrad.telegrambot.model.request.InlineQueryResult;
@@ -11,7 +11,9 @@ import com.pengrad.telegrambot.model.request.InlineQueryResultCachedVideo;
 import com.pengrad.telegrambot.request.AnswerInlineQuery;
 import com.pengrad.telegrambot.request.ForwardMessage;
 import com.pengrad.telegrambot.request.GetUpdates;
+import com.pengrad.telegrambot.request.SendVideo;
 import com.pengrad.telegrambot.response.GetUpdatesResponse;
+import com.sapher.youtubedl.YoutubeDLException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -33,6 +35,7 @@ public class BotPollingJob {
   private final LogHelper logHelper;
   private final AdminUserChecker adminUserChecker;
   private final int maxFileSize;
+  private final YoutubeDownloader youtubeDownloader;
 
   private final GetUpdates getUpdates = new GetUpdates();
 
@@ -75,7 +78,11 @@ public class BotPollingJob {
             handleUploadVideo(chatId, userId, messageId, video);
           }
         } else if (StringUtils.isNotBlank(text)) {
-          handleSetKeywords(chatId, userId, replyToVideo, text);
+          if (youtubeDownloader.isYoutubeLink(text)) {
+            handleYoutubeLink(chatId, userId, text);
+          } else {
+            handleSetKeywords(chatId, userId, replyToVideo, text);
+          }
         } else {
           telegramBot.sendText(
               chatId,
@@ -121,22 +128,30 @@ public class BotPollingJob {
     }
   }
 
+  private void handleYoutubeLink(Long chatId, Integer userId, String youtubeLink) {
+    try {
+      telegramBot.sendText(chatId, "Downloading...");
+      youtubeDownloader.download(
+          youtubeLink,
+          (file, elapsedTime) -> {
+            if (checkFileSizeOrSendErrorMsg(chatId, file.length())) {
+              // TODO can we capture title and send as a tg capture?
+              telegramBot.execute(new SendVideo(chatId, file));
+              telegramBot.sendText(chatId, "Downloaded in " + Util.renderDuration(elapsedTime));
+            }
+          });
+    } catch (YoutubeDLException e) {
+      telegramBot.sendText(chatId, Emoji.ERROR.msg(e.getMessage()));
+    }
+  }
+
   private void handleUploadVideo(Long chatId, Integer userId, Integer messageId, Video video) {
     if (!"video/mp4".equals(video.mimeType())) {
       telegramBot.sendText(
           chatId,
           Emoji.WARN.msg(
               "Sorry, only .MP4 videos are supported! Please try again with other file."));
-    } else if (video.fileSize() > maxFileSize) {
-      telegramBot.sendText(
-          chatId,
-          Emoji.WARN.msg(
-              "Sorry, video is too big! Only videos up to "
-                  + Util.humanReadableByteCount(maxFileSize, true)
-                  + " are allowed, yours is "
-                  + Util.humanReadableByteCount(video.fileSize(), true)
-                  + ". Please try again with other file."));
-    } else {
+    } else if (checkFileSizeOrSendErrorMsg(chatId, video.fileSize())) {
       Optional<PersistedVideo> storedVideo = videosService.getStoredVideo(video.fileUniqueId());
       if (storedVideo.isPresent()) {
         telegramBot.sendText(
@@ -155,6 +170,22 @@ public class BotPollingJob {
                     + "Use \";\" as separator. Only the first string before \";\" will show as title."));
       }
     }
+  }
+
+  private boolean checkFileSizeOrSendErrorMsg(Long chatId, long fileSize) {
+    if (fileSize > maxFileSize) {
+      telegramBot.sendText(
+          chatId,
+          Emoji.WARN.msg(
+              "Sorry, video is too big! Only videos up to "
+                  + Util.humanReadableByteCount(maxFileSize, true)
+                  + " are allowed, yours is "
+                  + Util.humanReadableByteCount(fileSize, true)
+                  + ". Please try again with other file."));
+      return false;
+    }
+
+    return true;
   }
 
   private void handleReplaceVideo(
