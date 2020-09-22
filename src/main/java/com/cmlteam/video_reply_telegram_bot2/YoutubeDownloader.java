@@ -31,14 +31,7 @@ public class YoutubeDownloader {
       throw new YoutubeDLException(getResultInfo(response));
     }
 
-    List<YoutubeVideoInfo> youtubeVideoInfos =
-        JsonUtil.parseJsonList(response.getOut(), YoutubeVideoInfo.class);
-
-    if (youtubeVideoInfos.size() != 1) {
-      throw new YoutubeDLException("youtubeVideoInfos.size() == " + youtubeVideoInfos.size());
-    }
-
-    return youtubeVideoInfos.get(0);
+    return JsonUtil.parseJson(response.getOut(), YoutubeVideoInfo.class);
   }
 
   public void download(String videoUrl, YoutubeDlResultHandler youtubeDlResultHandler)
