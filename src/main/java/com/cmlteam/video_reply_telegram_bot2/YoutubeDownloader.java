@@ -7,6 +7,7 @@ import com.sapher.youtubedl.YoutubeDLResponse;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
+import java.util.List;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
@@ -17,6 +18,27 @@ public class YoutubeDownloader {
 
   boolean isYoutubeLink(String candidate) {
     return youtubeLinkRegex.matcher(candidate).matches();
+  }
+
+  public YoutubeVideoInfo getVideoInfo(String videoUrl) throws YoutubeDLException {
+    String directory = "/tmp";
+    YoutubeDLRequest request = new YoutubeDLRequest(videoUrl, directory);
+    request.setOption("dump-json");
+
+    YoutubeDLResponse response = YoutubeDL.execute(request);
+
+    if (response.getExitCode() != 0) {
+      throw new YoutubeDLException(getResultInfo(response));
+    }
+
+    List<YoutubeVideoInfo> youtubeVideoInfos =
+        JsonUtil.parseJsonList(response.getOut(), YoutubeVideoInfo.class);
+
+    if (youtubeVideoInfos.size() != 1) {
+      throw new YoutubeDLException("youtubeVideoInfos.size() == " + youtubeVideoInfos.size());
+    }
+
+    return youtubeVideoInfos.get(0);
   }
 
   public void download(String videoUrl, YoutubeDlResultHandler youtubeDlResultHandler)

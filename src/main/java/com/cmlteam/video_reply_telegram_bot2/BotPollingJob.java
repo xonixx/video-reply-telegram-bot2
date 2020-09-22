@@ -130,16 +130,18 @@ public class BotPollingJob {
 
   private void handleYoutubeLink(Long chatId, Integer userId, String youtubeLink) {
     try {
-      telegramBot.sendText(chatId, "Downloading...");
-      youtubeDownloader.download(
-          youtubeLink,
-          (file, elapsedTime) -> {
-            if (checkFileSizeOrSendErrorMsg(chatId, file.length())) {
-              // TODO can we capture title and send as a tg capture?
-              telegramBot.execute(new SendVideo(chatId, file));
-              telegramBot.sendText(chatId, "Downloaded in " + Util.renderDuration(elapsedTime));
-            }
-          });
+      telegramBot.sendText(chatId, "Requesting Youtube...");
+      YoutubeVideoInfo videoInfo = youtubeDownloader.getVideoInfo(youtubeLink);
+      Optional<YoutubeVideoFormat> appropriateFormatOptional = videoInfo.getAppropriateFormat();
+      if (appropriateFormatOptional.isPresent()) {
+        YoutubeVideoFormat youtubeVideoFormat = appropriateFormatOptional.get();
+        if (checkFileSizeOrSendErrorMsg(chatId, youtubeVideoFormat.getFilesize())) {
+          telegramBot.execute(
+              new SendVideo(chatId, youtubeVideoFormat.getUrl()).caption(videoInfo.getTitle()));
+        }
+      } else {
+        telegramBot.sendText(chatId, Emoji.ERROR.msg("No appropriate video format!"));
+      }
     } catch (YoutubeDLException e) {
       telegramBot.sendText(chatId, Emoji.ERROR.msg(e.getMessage()));
     }
