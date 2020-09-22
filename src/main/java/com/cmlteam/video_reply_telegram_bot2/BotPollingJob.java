@@ -13,6 +13,7 @@ import com.pengrad.telegrambot.request.ForwardMessage;
 import com.pengrad.telegrambot.request.GetUpdates;
 import com.pengrad.telegrambot.request.SendVideo;
 import com.pengrad.telegrambot.response.GetUpdatesResponse;
+import com.pengrad.telegrambot.response.SendResponse;
 import com.sapher.youtubedl.YoutubeDLException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -136,8 +137,13 @@ public class BotPollingJob {
       if (appropriateFormatOptional.isPresent()) {
         YoutubeVideoFormat youtubeVideoFormat = appropriateFormatOptional.get();
         if (checkFileSizeOrSendErrorMsg(chatId, youtubeVideoFormat.getFilesize())) {
-          telegramBot.execute(
-              new SendVideo(chatId, youtubeVideoFormat.getUrl()).caption(videoInfo.getTitle()));
+          String title = videoInfo.getTitle();
+          SendResponse response =
+              telegramBot.execute(
+                  new SendVideo(chatId, youtubeVideoFormat.getUrl()).caption(title));
+          log.info("Response:\n" + jsonHelper.toPrettyString(response));
+          Message message = response.message();
+          handleUploadYoutubeVideo(chatId, userId, message.messageId(), message.video(), title);
         }
       } else {
         telegramBot.sendText(chatId, Emoji.ERROR.msg("No appropriate video format!"));
@@ -172,6 +178,19 @@ public class BotPollingJob {
                     + "Use \";\" as separator. Only the first string before \";\" will show as title."));
       }
     }
+  }
+
+  private void handleUploadYoutubeVideo(
+      Long chatId, Integer userId, Integer messageId, Video video, String title) {
+    PersistedVideo persistedVideo = new PersistedVideo(video, userId, messageId);
+    persistedVideo.setKeywords(List.of(title));
+    videosService.store(persistedVideo);
+    telegramBot.sendMarkdownV2(
+        chatId,
+        Emoji.SUCCESS.msg(
+            "Ok received video! Video is ready for inline search! "
+                + "If you want to update keywords please *REPLY* to your own video with a text. "
+                + "Use \";\" as separator. Only the first string before \";\" will show as title."));
   }
 
   private boolean checkFileSizeOrSendErrorMsg(Long chatId, long fileSize) {
