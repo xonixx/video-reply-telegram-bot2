@@ -19,6 +19,7 @@ public class PersistedVideo {
   @Id private String id;
   private String fileId;
   private String fileUniqueId;
+  private String youtubeId;
   private int userId;
   private int messageId;
   private List<String> keywords;
@@ -30,6 +31,7 @@ public class PersistedVideo {
         null,
         video.fileId(),
         video.fileUniqueId(),
+        null,
         userId,
         messageId,
         List.of(),

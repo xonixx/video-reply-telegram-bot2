@@ -10,6 +10,7 @@ import java.util.Optional;
 @Getter
 @Setter
 public class YoutubeVideoInfo {
+  private String id; // YT ID
   private String fulltitle;
   private String title;
   private int duration; // sec

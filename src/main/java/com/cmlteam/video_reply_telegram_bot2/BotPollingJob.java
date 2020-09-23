@@ -133,21 +133,35 @@ public class BotPollingJob {
     try {
       telegramBot.sendText(chatId, "Requesting Youtube...");
       YoutubeVideoInfo videoInfo = youtubeDownloader.getVideoInfo(youtubeLink);
-      Optional<YoutubeVideoFormat> appropriateFormatOptional = videoInfo.getAppropriateFormat();
-      if (appropriateFormatOptional.isPresent()) {
-        YoutubeVideoFormat youtubeVideoFormat = appropriateFormatOptional.get();
-        if (checkFileSizeOrSendErrorMsg(chatId, youtubeVideoFormat.getFilesize())) {
-          String title = videoInfo.getTitle();
-          SendResponse response =
-              telegramBot.execute(
-                  new SendVideo(chatId, youtubeVideoFormat.getUrl()).caption(title));
-          log.info("Response:\n" + jsonHelper.toPrettyString(response));
-          Message message = response.message();
-          handleUploadYoutubeVideo(chatId, userId, message.messageId(), message.video(), title);
-        }
-      } else {
-        telegramBot.sendText(chatId, Emoji.ERROR.msg("No appropriate video format!"));
-      }
+      String youtubeId = videoInfo.getId();
+      Optional<PersistedVideo> videoByYoutubeId =
+          videosService.getStoredVideoByYoutubeId(youtubeId);
+      videoByYoutubeId.ifPresentOrElse(
+          existingVideo ->
+              telegramBot.sendText(
+                  chatId,
+                  Emoji.WARN.msg(
+                      " The same Youtube video already exists with keywords: "
+                          + String.join("; ", existingVideo.getKeywords()))),
+          () -> {
+            Optional<YoutubeVideoFormat> appropriateFormatOptional =
+                videoInfo.getAppropriateFormat();
+            if (appropriateFormatOptional.isPresent()) {
+              YoutubeVideoFormat youtubeVideoFormat = appropriateFormatOptional.get();
+              if (checkFileSizeOrSendErrorMsg(chatId, youtubeVideoFormat.getFilesize())) {
+                String title = videoInfo.getTitle();
+                SendResponse response =
+                    telegramBot.execute(
+                        new SendVideo(chatId, youtubeVideoFormat.getUrl()).caption(title));
+                log.info("Response:\n" + jsonHelper.toPrettyString(response));
+                Message message = response.message();
+                handleUploadYoutubeVideo(
+                    chatId, userId, message.messageId(), message.video(), title, youtubeId);
+              }
+            } else {
+              telegramBot.sendText(chatId, Emoji.ERROR.msg("No appropriate video format!"));
+            }
+          });
     } catch (YoutubeDLException e) {
       telegramBot.sendText(chatId, Emoji.ERROR.msg(e.getMessage()));
     }
@@ -181,8 +195,9 @@ public class BotPollingJob {
   }
 
   private void handleUploadYoutubeVideo(
-      Long chatId, Integer userId, Integer messageId, Video video, String title) {
+      Long chatId, Integer userId, Integer messageId, Video video, String title, String youtubeId) {
     PersistedVideo persistedVideo = new PersistedVideo(video, userId, messageId);
+    persistedVideo.setYoutubeId(youtubeId);
     persistedVideo.setKeywords(List.of(title));
     videosService.store(persistedVideo);
     telegramBot.sendMarkdownV2(
