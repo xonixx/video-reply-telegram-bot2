@@ -34,6 +34,12 @@ public class VideosBackupper {
     }
   }
 
+  @RequiredArgsConstructor(staticName = "of")
+  private static class ErrVid {
+    final PersistedVideo persistedVideo;
+    final Exception exception;
+  }
+
   @Async
   public void startBackup(long userToInform) {
     List<PersistedVideo> persistedVideos = videosService.getAllVideos();
@@ -46,7 +52,7 @@ public class VideosBackupper {
     long t0 = System.currentTimeMillis();
 
     int newVideosCnt = 0;
-    List<PersistedVideo> errVideos = new ArrayList<>();
+    List<ErrVid> errVideos = new ArrayList<>();
 
     try {
       for (PersistedVideo persistedVideo : persistedVideos) {
@@ -57,7 +63,7 @@ public class VideosBackupper {
           }
         } catch (Exception ex) {
           log.error("", ex);
-          errVideos.add(persistedVideo);
+          errVideos.add(ErrVid.of(persistedVideo, ex));
         }
       }
     } catch (Exception ex) {
@@ -78,10 +84,16 @@ public class VideosBackupper {
                 : ". **" + errVideos.size() + " videos failed to download!**"));
     if (!errVideos.isEmpty()) {
       int i = 0;
-      for (PersistedVideo errVideo : errVideos) {
+      for (ErrVid errVideo : errVideos) {
+        PersistedVideo persistedVideo = errVideo.persistedVideo;
         telegramBot.execute(
-            new SendVideo(userToInform, errVideo.getFileId())
-                .caption("Err video #" + (++i) + ": " + String.join("; ", errVideo.getKeywords())));
+            new SendVideo(userToInform, persistedVideo.getFileId())
+                .caption(
+                    "Err video #"
+                        + (++i)
+                        + ": "
+                        + String.join("; ", persistedVideo.getKeywords())));
+        telegramBot.sendText(userToInform, "Err: " + errVideo.exception.getMessage());
       }
     }
   }

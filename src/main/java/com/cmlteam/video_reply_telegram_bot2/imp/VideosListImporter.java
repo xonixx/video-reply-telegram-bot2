@@ -12,6 +12,7 @@ import javax.annotation.PostConstruct;
 import java.time.Instant;
 import java.util.Optional;
 
+// TODO remove this since it's already in DB
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -24,7 +25,7 @@ public class VideosListImporter {
   @PostConstruct
   public void postConstruct() {
     log.info("Videos: " + videosListProperties.getList().size());
-    runImport();
+//    runImport();
   }
 
   void runImport() {
