@@ -5,6 +5,7 @@ import com.cmlteam.util.Util;
 import com.pengrad.telegrambot.model.File;
 import com.pengrad.telegrambot.request.GetFile;
 import com.pengrad.telegrambot.request.SendMessage;
+import com.pengrad.telegrambot.request.SendVideo;
 import com.pengrad.telegrambot.response.GetFileResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -14,6 +15,7 @@ import org.springframework.scheduling.annotation.Async;
 
 import javax.annotation.PostConstruct;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -44,7 +46,7 @@ public class VideosBackupper {
     long t0 = System.currentTimeMillis();
 
     int newVideosCnt = 0;
-    int errVideosCnt = 0;
+    List<PersistedVideo> errVideos = new ArrayList<>();
 
     try {
       for (PersistedVideo persistedVideo : persistedVideos) {
@@ -55,7 +57,7 @@ public class VideosBackupper {
           }
         } catch (Exception ex) {
           log.error("", ex);
-          errVideosCnt++;
+          errVideos.add(persistedVideo);
         }
       }
     } catch (Exception ex) {
@@ -71,21 +73,21 @@ public class VideosBackupper {
             + total
             + " videos in "
             + Util.renderDurationFromStart(t0)
-            + (errVideosCnt > 0 ? ". **" + errVideosCnt + " videos failed to download!**" : ""));
+            + (errVideos.isEmpty()
+                ? ""
+                : ". **" + errVideos.size() + " videos failed to download!**"));
+    if (!errVideos.isEmpty()) {
+      int i = 0;
+      for (PersistedVideo errVideo : errVideos) {
+        telegramBot.execute(
+            new SendVideo(userToInform, errVideo.getFileId())
+                .caption("Err video #" + (++i) + ": " + String.join("; ", errVideo.getKeywords())));
+      }
+    }
   }
 
   @SneakyThrows
   private boolean backupVideo(PersistedVideo persistedVideo) {
-    GetFileResponse fileResponse = telegramBot.executeEx(new GetFile(persistedVideo.getFileId()));
-
-    File file = fileResponse.file();
-
-    String filePath = file.filePath();
-
-    String videoUrl = formFileDlUrl(filePath);
-
-    log.info("Downloading {} : {}... ", persistedVideo.getFileId(), videoUrl);
-
     java.io.File fileDestination =
         new java.io.File(backupFolder, persistedVideo.getFileUniqueId() + ".mp4");
 
@@ -94,6 +96,15 @@ public class VideosBackupper {
       return false;
     } else {
       log.info("NEW");
+      GetFileResponse fileResponse = telegramBot.executeEx(new GetFile(persistedVideo.getFileId()));
+
+      File file = fileResponse.file();
+
+      String filePath = file.filePath();
+
+      String videoUrl = formFileDlUrl(filePath);
+
+      log.info("Downloading {} : {}... ", persistedVideo.getFileId(), videoUrl);
       FileUtils.copyURLToFile(new URL(videoUrl), fileDestination, TIMEOUT, TIMEOUT);
       return true;
     }
