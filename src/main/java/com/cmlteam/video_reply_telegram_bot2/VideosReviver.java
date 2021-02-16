@@ -2,9 +2,12 @@ package com.cmlteam.video_reply_telegram_bot2;
 
 import com.cmlteam.telegram_bot_common.TelegramBotWrapper;
 import com.cmlteam.util.Util;
+import com.pengrad.telegrambot.model.Video;
 import com.pengrad.telegrambot.request.GetFile;
 import com.pengrad.telegrambot.request.SendMessage;
+import com.pengrad.telegrambot.request.SendVideo;
 import com.pengrad.telegrambot.response.GetFileResponse;
+import com.pengrad.telegrambot.response.SendResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -67,21 +70,34 @@ public class VideosReviver {
     GetFileResponse fileResponse = telegramBot.execute(new GetFile(persistedVideo.getFileId()));
 
     if (!fileResponse.isOk()) {
-      telegramBot.sendText(
-          userToInform,
-          "Video "
-              + persistedVideo.getFileUniqueId()
-              + " with keywords '"
-              + persistedVideo.getKeywords()
-              + "' is dead :(");
+
+      java.io.File fileBackup =
+          new java.io.File(backupFolder, persistedVideo.getFileUniqueId() + ".mp4");
+
+      if (!fileBackup.exists()) {
+        fileBackup = new java.io.File(backupFolder, persistedVideo.getFileId() + ".mp4");
+      }
+
+      if (!fileBackup.exists()) {
+        throw new RuntimeException("File not found for: " + persistedVideo.getKeywordsString());
+      }
+
+      SendResponse response =
+          telegramBot.execute(
+              new SendVideo(userToInform, fileBackup)
+                  .caption(persistedVideo.getKeywordsString() + ": " + fileResponse.description()));
+
+      Video video = response.message().video();
+
+      persistedVideo.setFileUniqueId(video.fileUniqueId());
+      persistedVideo.setFileId(video.fileId());
+
+      videosService.store(persistedVideo);
+
+      Thread.sleep(1000);
+
       return true;
     }
-
-    //    File file = fileResponse.file();
-    //
-    //    String filePath = file.filePath();
-    //
-    //    String videoUrl = formFileDlUrl(filePath);
 
     return false;
   }

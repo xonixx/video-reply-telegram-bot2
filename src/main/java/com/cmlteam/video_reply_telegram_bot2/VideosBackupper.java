@@ -88,11 +88,7 @@ public class VideosBackupper {
         PersistedVideo persistedVideo = errVideo.persistedVideo;
         telegramBot.execute(
             new SendVideo(userToInform, persistedVideo.getFileId())
-                .caption(
-                    "Err video #"
-                        + (++i)
-                        + ": "
-                        + persistedVideo.getKeywordsString()));
+                .caption("Err video #" + (++i) + ": " + persistedVideo.getKeywordsString()));
         telegramBot.sendText(userToInform, "Err: " + errVideo.exception.getMessage());
       }
     }
@@ -100,6 +96,7 @@ public class VideosBackupper {
 
   @SneakyThrows
   private boolean backupVideo(PersistedVideo persistedVideo) {
+    // TODO persist by ID, not fileUniqueId
     java.io.File fileDestination =
         new java.io.File(backupFolder, persistedVideo.getFileUniqueId() + ".mp4");
 
