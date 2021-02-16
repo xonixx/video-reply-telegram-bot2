@@ -32,6 +32,7 @@ public class BotPollingJob {
   private final TelegramBotWrapper telegramBot;
   private final VideosService videosService;
   private final VideosBackupper videosBackupper;
+  private final VideosReviver videosReviver;
   private final JsonHelper jsonHelper;
   private final LogHelper logHelper;
   private final AdminUserChecker adminUserChecker;
@@ -95,6 +96,8 @@ public class BotPollingJob {
         if (adminUserChecker.isAdmin(user)) {
           if (BotCommand.BACKUP.is(text)) {
             videosBackupper.startBackup(userId);
+          } else if (BotCommand.REVIVE.is(text)) {
+            videosReviver.revive(userId);
           }
         } else {
           forwardMessageToAdmin(messageId, chatId);
@@ -142,7 +145,7 @@ public class BotPollingJob {
                   chatId,
                   Emoji.WARN.msg(
                       " The same Youtube video already exists with keywords: "
-                          + String.join("; ", existingVideo.getKeywords()))),
+                          + existingVideo.getKeywordsString())),
           () -> {
             Optional<YoutubeVideoFormat> appropriateFormatOptional =
                 videoInfo.getAppropriateFormat();
@@ -180,7 +183,7 @@ public class BotPollingJob {
             chatId,
             Emoji.WARN.msg(
                 " The same video already exists with keywords: "
-                    + String.join("; ", storedVideo.get().getKeywords())));
+                    + storedVideo.get().getKeywordsString()));
       } else {
         PersistedVideo persistedVideo = new PersistedVideo(video, userId, messageId);
         videosService.store(persistedVideo);

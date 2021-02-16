@@ -92,7 +92,7 @@ public class VideosBackupper {
                     "Err video #"
                         + (++i)
                         + ": "
-                        + String.join("; ", persistedVideo.getKeywords())));
+                        + persistedVideo.getKeywordsString()));
         telegramBot.sendText(userToInform, "Err: " + errVideo.exception.getMessage());
       }
     }

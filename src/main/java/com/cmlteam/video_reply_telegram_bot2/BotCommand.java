@@ -8,7 +8,8 @@ import java.util.stream.Stream;
 public enum BotCommand {
   START("start", false),
   DELETE("delete", false),
-  BACKUP("backup", true);
+  BACKUP("backup", true),
+  REVIVE("revive", true);
 
   private final String cmd;
   private final boolean isAdminCommand;

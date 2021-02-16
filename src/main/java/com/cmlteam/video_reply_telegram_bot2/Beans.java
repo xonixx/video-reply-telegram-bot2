@@ -49,11 +49,23 @@ public class Beans {
   }
 
   @Bean
+  VideosReviver videosReviver(
+      BotProperties botProperties,
+      TelegramBotWrapper telegramBotWrapper,
+      VideosService videosService) {
+    return new VideosReviver(
+        botProperties.getBackupFolder(),
+        telegramBotWrapper,
+        videosService);
+  }
+
+  @Bean
   public BotPollingJob botPollingJob(
       BotProperties botProperties,
       TelegramBotWrapper telegramBotWrapper,
       VideosService videosService,
       VideosBackupper videosBackupper,
+      VideosReviver videosReviver,
       JsonHelper jsonHelper,
       LogHelper logHelper,
       YoutubeDownloader youtubeDownloader) {
@@ -61,6 +73,7 @@ public class Beans {
         telegramBotWrapper,
         videosService,
         videosBackupper,
+        videosReviver,
         jsonHelper,
         logHelper,
         botProperties,

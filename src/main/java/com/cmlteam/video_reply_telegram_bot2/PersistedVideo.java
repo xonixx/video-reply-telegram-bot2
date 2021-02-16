@@ -42,4 +42,8 @@ public class PersistedVideo {
   public boolean matches(SearchStringMatcher searchStringMatcher, @NonNull String query) {
     return keywords.stream().anyMatch(s -> searchStringMatcher.matches(s, query));
   }
+
+  public String getKeywordsString() {
+    return String.join("; ", getKeywords());
+  }
 }
