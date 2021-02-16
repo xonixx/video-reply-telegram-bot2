@@ -69,36 +69,35 @@ public class VideosReviver {
   private boolean reviveVid(long userToInform, PersistedVideo persistedVideo) {
     GetFileResponse fileResponse = telegramBot.execute(new GetFile(persistedVideo.getFileId()));
 
-    if (!fileResponse.isOk()) {
-
-      java.io.File fileBackup =
-          new java.io.File(backupFolder, persistedVideo.getFileUniqueId() + ".mp4");
-
-      if (!fileBackup.exists()) {
-        fileBackup = new java.io.File(backupFolder, persistedVideo.getFileId() + ".mp4");
-      }
-
-      if (!fileBackup.exists()) {
-        throw new RuntimeException("File not found for: " + persistedVideo.getKeywordsString());
-      }
-
-      SendResponse response =
-          telegramBot.execute(
-              new SendVideo(userToInform, fileBackup)
-                  .caption(persistedVideo.getKeywordsString() + ": " + fileResponse.description()));
-
-      Video video = response.message().video();
-
-      persistedVideo.setFileUniqueId(video.fileUniqueId());
-      persistedVideo.setFileId(video.fileId());
-
-      videosService.store(persistedVideo);
-
-      Thread.sleep(1000);
-
-      return true;
+    if (fileResponse.isOk()) {
+      return false;
     }
 
-    return false;
+    java.io.File fileBackup =
+        new java.io.File(backupFolder, persistedVideo.getFileUniqueId() + ".mp4");
+
+    if (!fileBackup.exists()) {
+      fileBackup = new java.io.File(backupFolder, persistedVideo.getFileId() + ".mp4");
+    }
+
+    if (!fileBackup.exists()) {
+      throw new RuntimeException("File not found for: " + persistedVideo.getKeywordsString());
+    }
+
+    SendResponse response =
+        telegramBot.execute(
+            new SendVideo(userToInform, fileBackup)
+                .caption(persistedVideo.getKeywordsString() + ": " + fileResponse.description()));
+
+    Video video = response.message().video();
+
+    persistedVideo.setFileUniqueId(video.fileUniqueId());
+    persistedVideo.setFileId(video.fileId());
+
+    videosService.store(persistedVideo);
+
+    Thread.sleep(1000);
+
+    return true;
   }
 }
