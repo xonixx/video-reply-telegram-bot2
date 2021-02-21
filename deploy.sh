@@ -19,13 +19,14 @@ echo
 echo "DEPLOY..."
 echo
 
-tar -cvf - $APP.conf target/$APP.jar | ssh $DEPLOY_USER@$SERV "sudo -u $APP_USER tar -C /home/$APP_USER -xf -"
+tar -cvf - $APP.conf -C target/ $APP.jar | ssh $DEPLOY_USER@$SERV "sudo -u $APP_USER tar -C /home/$APP_USER -xf -"
 
 echo
 echo "RESTART..."
 echo
 
-ssh $DEPLOY_USER "
+ssh $DEPLOY_USER@$SERV "
+set -e
 if [[ ! -f /etc/init.d/$APP ]]
 then
     echo 'Installing service $APP ...'
