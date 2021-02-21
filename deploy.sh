@@ -3,8 +3,9 @@
 set -e
 
 APP=video_reply_telegram_bot2
-USER=apps1
-SERV=prod.cmlteam.com
+APP_USER=video_reply_telegram_bot2
+DEPLOY_USER=admin
+SERV=cmlteam3.cmlteam.com
 
 export JAVA_HOME=/home/xonix/.sdkman/candidates/java/current
 
@@ -18,16 +19,17 @@ echo
 echo "DEPLOY..."
 echo
 
-scp $APP.conf target/$APP.jar $USER@$SERV:~/
+tar -cvf - $APP.conf target/$APP.jar | ssh $DEPLOY_USER@$SERV "sudo -u $APP_USER tar -C /home/$APP_USER -xf -"
 
 echo
 echo "RESTART..."
 echo
 
-ssh $USER@$SERV "
+ssh $DEPLOY_USER "
 if [[ ! -f /etc/init.d/$APP ]]
 then
-    sudo ln -s /home/$USER/$APP.jar /etc/init.d/$APP
+    echo 'Installing service $APP ...'
+    sudo ln -s /home/$APP_USER/$APP.jar /etc/init.d/$APP
     sudo update-rc.d $APP defaults 99
 fi
 sudo /etc/init.d/$APP restart
