@@ -96,9 +96,7 @@ public class VideosBackupper {
 
   @SneakyThrows
   private boolean backupVideo(PersistedVideo persistedVideo) {
-    // TODO persist by ID, not fileUniqueId
-    java.io.File fileDestination =
-        new java.io.File(backupFolder, persistedVideo.getFileUniqueId() + ".mp4");
+    java.io.File fileDestination = new java.io.File(backupFolder, persistedVideo.getId() + ".mp4");
 
     if (fileDestination.exists()) {
       log.info("EXISTING");
