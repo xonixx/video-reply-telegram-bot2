@@ -26,6 +26,7 @@ public class VideosBackupper {
   private final String token;
   private final TelegramBotWrapper telegramBot;
   private final VideosService videosService;
+  private final PersistedVideoRepository persistedVideoRepository;
 
   @PostConstruct
   void postConstruct() {
@@ -98,9 +99,11 @@ public class VideosBackupper {
   private boolean backupVideo(PersistedVideo persistedVideo) {
     java.io.File fileDestination = new java.io.File(backupFolder, persistedVideo.getId() + ".mp4");
 
+    boolean result;
+
     if (fileDestination.exists()) {
       log.info("EXISTING");
-      return false;
+      result = false;
     } else {
       log.info("NEW");
       GetFileResponse fileResponse = telegramBot.executeEx(new GetFile(persistedVideo.getFileId()));
@@ -113,8 +116,15 @@ public class VideosBackupper {
 
       log.info("Downloading {} : {}... ", persistedVideo.getFileId(), videoUrl);
       FileUtils.copyURLToFile(new URL(videoUrl), fileDestination, TIMEOUT, TIMEOUT);
-      return true;
+      result = true;
     }
+
+    if (persistedVideo.getSize() == 0) {
+      persistedVideo.setSize((int) fileDestination.length());
+      persistedVideoRepository.save(persistedVideo);
+    }
+
+    return result;
   }
 
   private String formFileDlUrl(String filePath) {

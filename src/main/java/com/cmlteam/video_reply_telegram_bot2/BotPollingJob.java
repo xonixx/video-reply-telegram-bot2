@@ -107,29 +107,42 @@ public class BotPollingJob {
       InlineQuery inlineQuery = update.inlineQuery();
 
       if (inlineQuery != null) {
-        String query = inlineQuery.query();
-        String offset = inlineQuery.offset();
-
-        VideosPage videosPage = videosService.searchVideo(inlineQuery.from().id(), query, offset);
-
-        //        log.info("offset: {}, nextOffset: {}", offset, videosPage.getNextOffset());
-
-        List<InlineQueryResultCachedVideo> results =
-            new ArrayList<>(videosPage.getPersistedVideos().size());
-        for (PersistedVideo v : videosPage.getPersistedVideos()) {
-          results.add(
-              new InlineQueryResultCachedVideo(
-                  v.getFileUniqueId(), v.getFileId(), v.getKeywords().get(0)));
-        }
-
-        telegramBot.execute(
-            update,
-            new AnswerInlineQuery(inlineQuery.id(), results.toArray(new InlineQueryResult[0]))
-                .nextOffset(videosPage.getNextOffset()));
+        handleInlineQuery(update, inlineQuery);
       }
 
       getUpdates.offset(update.updateId() + 1);
     }
+  }
+
+  private void handleInlineQuery(Update update, InlineQuery inlineQuery) {
+    String query = inlineQuery.query();
+    String offset = inlineQuery.offset();
+
+    boolean isSize = false;
+    if (query.startsWith("!size ")) {
+      isSize = true;
+      query = query.replaceFirst("^!size", "").trim();
+    }
+
+    VideosPage videosPage = videosService.searchVideo(inlineQuery.from().id(), query, offset);
+
+    //        log.info("offset: {}, nextOffset: {}", offset, videosPage.getNextOffset());
+
+    List<InlineQueryResultCachedVideo> results =
+        new ArrayList<>(videosPage.getPersistedVideos().size());
+    for (PersistedVideo v : videosPage.getPersistedVideos()) {
+      results.add(
+          new InlineQueryResultCachedVideo(
+              v.getFileUniqueId(),
+              v.getFileId(),
+              (isSize ? "[" + Util.renderFileSize(v.getSize()) + "] " : "")
+                  + v.getKeywords().get(0)));
+    }
+
+    telegramBot.execute(
+        update,
+        new AnswerInlineQuery(inlineQuery.id(), results.toArray(new InlineQueryResult[0]))
+            .nextOffset(videosPage.getNextOffset()));
   }
 
   private void handleYoutubeLink(Long chatId, Integer userId, String youtubeLink) {

@@ -40,12 +40,14 @@ public class Beans {
   VideosBackupper videosBackupper(
       BotProperties botProperties,
       TelegramBotWrapper telegramBotWrapper,
-      VideosService videosService) {
+      VideosService videosService,
+      PersistedVideoRepository persistedVideoRepository) {
     return new VideosBackupper(
         botProperties.getBackupFolder(),
         botProperties.getToken(),
         telegramBotWrapper,
-        videosService);
+        videosService,
+        persistedVideoRepository);
   }
 
   @Bean
@@ -53,10 +55,7 @@ public class Beans {
       BotProperties botProperties,
       TelegramBotWrapper telegramBotWrapper,
       VideosService videosService) {
-    return new VideosReviver(
-        botProperties.getBackupFolder(),
-        telegramBotWrapper,
-        videosService);
+    return new VideosReviver(botProperties.getBackupFolder(), telegramBotWrapper, videosService);
   }
 
   @Bean

@@ -22,6 +22,7 @@ public class PersistedVideo {
   private String youtubeId;
   private int userId;
   private int messageId;
+  private int size; // size in bytes
   private List<String> keywords;
   @CreatedDate private Instant createDate;
   @LastModifiedDate private Instant lastModifiedDate;
@@ -34,6 +35,7 @@ public class PersistedVideo {
         null,
         userId,
         messageId,
+        video.fileSize(),
         List.of(),
         Instant.now(),
         Instant.now());
