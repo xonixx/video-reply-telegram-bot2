@@ -249,6 +249,7 @@ public class BotPollingJob {
               persistedVideo.setFileId(video.fileId());
               persistedVideo.setFileUniqueId(video.fileUniqueId());
               persistedVideo.setMessageId(messageId);
+              persistedVideo.setSize(video.fileSize());
 
               videosService.store(persistedVideo);
 
