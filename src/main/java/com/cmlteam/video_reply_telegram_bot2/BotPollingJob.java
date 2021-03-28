@@ -119,7 +119,7 @@ public class BotPollingJob {
     String offset = inlineQuery.offset();
 
     boolean isSize = false;
-    if (query.startsWith("!size ")) {
+    if ("!size".equals(query) || query.startsWith("!size ")) {
       isSize = true;
       query = query.replaceFirst("^!size", "").trim();
     }
