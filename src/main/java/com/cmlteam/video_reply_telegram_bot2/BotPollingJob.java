@@ -70,7 +70,10 @@ public class BotPollingJob {
         Video replyToVideo = replyToMessage == null ? null : replyToMessage.video();
 
         if (BotCommand.START.is(text)) {
-          telegramBot.sendText(chatId, "Please start from uploading video");
+          telegramBot.sendText(
+              chatId,
+              "This is inline bot to allow reply with video-meme!\n"
+                  + "More instructions: https://github.com/xonixx/video-reply-telegram-bot2/blob/master/README.md");
         } else if (BotCommand.DELETE.is(text)) {
           handleDeleteVideo(chatId, userId, replyToVideo);
         } else if (video != null) {
