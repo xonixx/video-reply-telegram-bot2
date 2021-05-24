@@ -9,8 +9,8 @@ The rules below are intended to fulfill it.
 5.  **Languages.** Allowed are English, Russian, Ukrainian. Others can be subject of additional approval by moderator.
 6.  **Content.** The video (and a phrase in it) should be the most generic so as to be applicable as video reply in more situations. Thus, sometimes it makes sense to cut a long phrase to be shorter and so more universal.
 7.  **Content.** If initial video contains two or more people having conversation, you should cut the part of it with only one person in it. Otherwise, it won’t serve good role as a video reply.
-8.  **Quality.** Cut video with precision such that only relevant span captured in it, and some unwanted frames/sounds not be included at start and end. 
+8.  **Quality.** Cut video with precision such that only relevant span captured in it, and any unwanted frames/sounds not be included at start and end. 
 9.  **Correct playback.** The uploaded video must playback correctly (with no hiccups) in all major Telegram platforms.  
-10.  **Duplicates.** You should make sure not to upload a duplicate video. Play with inline bot + keywords to check if a video is already there. TODO add an option to upload in better quality
+10.  **Duplicates.** You should make sure not to upload a duplicate video. Play with inline bot + keywords to check if a video is already there. TODO add an option to upload in better quality.
 11. Failing to comply with the rules above could be a subject for video removal by moderator.
 12. By using this service you agree that moderator has a right to remove a video without explanation.
