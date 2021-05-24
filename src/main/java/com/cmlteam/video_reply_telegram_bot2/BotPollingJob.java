@@ -315,7 +315,8 @@ public class BotPollingJob {
     } else {
       telegramBot.sendText(
           chatId,
-          "To use this command - reply to your own video in this chat that you want to delete with the /delete command");
+          Emoji.WARN.msg(
+              "To use this command - reply to your own video in this chat that you want to delete with the /delete command"));
     }
   }
 
