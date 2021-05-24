@@ -4,7 +4,7 @@ The rules below are intended to fulfill it.
 
 1.  **Format.** MP4.
 2.  **Size.** Video should be small. Recommended size is under 500 KB. Acceptable around 1 MB. No one likes to wait long to load.
-3.  **Duration.** Video should be rather small. Preferably under 10 seconds. No one likes to watch long vide-replies. 
+3.  **Duration.** Video should be rather small. Preferably under 10 seconds. No one likes to watch long video-replies. 
 4.  **Quality.** Prefer video with better quality, but respect items 2. and 3. above.
 5.  **Languages.** Allowed are English, Russian, Ukrainian. Others can be subject of additional approval by moderator.
 6.  **Content.** The video (and a phrase in it) should be the most generic so as to be applicable as video reply in more situations. Thus, sometimes it makes sense to cut a long phrase to be shorter and so more universal.
