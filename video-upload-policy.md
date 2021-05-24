@@ -1,3 +1,5 @@
+[[читать по-русски]](video-upload-policy-ru.md)
+
 The goal: uploaded video should serve as a good video-reply in many situations. 
 
 The rules below are intended to fulfill it.
