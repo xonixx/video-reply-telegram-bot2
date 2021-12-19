@@ -7,7 +7,6 @@ import com.sapher.youtubedl.YoutubeDLResponse;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
-import java.util.List;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
@@ -25,6 +24,8 @@ public class YoutubeDownloader {
     YoutubeDLRequest request = new YoutubeDLRequest(videoUrl, directory);
     request.setOption("dump-json");
 
+    YoutubeDL.setExecutablePath("python39 /usr/local/bin/yt-dlp");
+
     YoutubeDLResponse response = YoutubeDL.execute(request);
 
     if (response.getExitCode() != 0) {
@@ -39,7 +40,7 @@ public class YoutubeDownloader {
 
     String directory = "/tmp";
 
-    String fname = UUID.randomUUID().toString() + ".mp4";
+    String fname = UUID.randomUUID() + ".mp4";
 
     YoutubeDLRequest request = new YoutubeDLRequest(videoUrl, directory);
     //    request.setOption("ignore-errors"); // --ignore-errors
