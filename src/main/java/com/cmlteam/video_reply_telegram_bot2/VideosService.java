@@ -24,7 +24,7 @@ public class VideosService {
    * @param offset offset identifier for pagination
    * @return list of file_ids of videos stored in telegram
    */
-  VideosPage searchVideo(int userId, @NonNull String query, @NonNull String offset) {
+  VideosPage searchVideo(long userId, @NonNull String query, @NonNull String offset) {
     boolean isMy = false;
     if ("my".equals(query) || query.startsWith("my ")) {
       isMy = true;
@@ -61,11 +61,11 @@ public class VideosService {
     return persistedVideoRepository.getFirstByUserIdOrderByLastModifiedDateDesc(userId);
   }
 
-  public Optional<PersistedVideo> getStoredVideo(int userId, int messageId) {
+  public Optional<PersistedVideo> getStoredVideo(long userId, int messageId) {
     return persistedVideoRepository.getFirstByUserIdAndMessageId(userId, messageId);
   }
 
-  public Optional<PersistedVideo> getStoredVideo(int userId, String fileUniqueId) {
+  public Optional<PersistedVideo> getStoredVideo(long userId, String fileUniqueId) {
     return adminUserChecker.isAdmin(userId)
         ? getStoredVideo(fileUniqueId)
         : persistedVideoRepository.getFirstByUserIdAndFileUniqueId(userId, fileUniqueId);

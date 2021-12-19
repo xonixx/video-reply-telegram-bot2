@@ -65,7 +65,7 @@ public class BotPollingJob {
         String text = message.text();
         Video video = message.video();
         User user = message.from();
-        Integer userId = user.id();
+        Long userId = user.id();
         Message replyToMessage = message.replyToMessage();
         Video replyToVideo = replyToMessage == null ? null : replyToMessage.video();
 
@@ -148,7 +148,7 @@ public class BotPollingJob {
             .nextOffset(videosPage.getNextOffset()));
   }
 
-  private void handleYoutubeLink(Long chatId, Integer userId, String youtubeLink) {
+  private void handleYoutubeLink(Long chatId, Long userId, String youtubeLink) {
     try {
       telegramBot.sendText(chatId, "Requesting Youtube...");
       YoutubeVideoInfo videoInfo = youtubeDownloader.getVideoInfo(youtubeLink);
@@ -186,7 +186,7 @@ public class BotPollingJob {
     }
   }
 
-  private void handleUploadVideo(Long chatId, Integer userId, Integer messageId, Video video) {
+  private void handleUploadVideo(Long chatId, Long userId, Integer messageId, Video video) {
     if (!"video/mp4".equals(video.mimeType())) {
       telegramBot.sendText(
           chatId,
@@ -214,7 +214,7 @@ public class BotPollingJob {
   }
 
   private void handleUploadYoutubeVideo(
-      Long chatId, Integer userId, Integer messageId, Video video, String title, String youtubeId) {
+      Long chatId, Long userId, Integer messageId, Video video, String title, String youtubeId) {
     PersistedVideo persistedVideo = new PersistedVideo(video, userId, messageId);
     persistedVideo.setYoutubeId(youtubeId);
     persistedVideo.setKeywords(List.of(title));
@@ -244,7 +244,7 @@ public class BotPollingJob {
   }
 
   private void handleReplaceVideo(
-      Long chatId, Integer userId, Integer messageId, Video replyToVideo, Video video) {
+      Long chatId, Long userId, Integer messageId, Video replyToVideo, Video video) {
     videosService
         .getStoredVideo(userId, replyToVideo.fileUniqueId())
         .ifPresentOrElse(
@@ -268,7 +268,7 @@ public class BotPollingJob {
                         "The video you are trying to replace doesn't exist or you don't have access to it!")));
   }
 
-  private void handleSetKeywords(Long chatId, Integer userId, Video replyToVideo, String text) {
+  private void handleSetKeywords(Long chatId, Long userId, Video replyToVideo, String text) {
     if (replyToVideo != null) {
       List<String> keywords =
           Stream.of(text.split(";")).map(String::trim).collect(Collectors.toList());
@@ -300,7 +300,7 @@ public class BotPollingJob {
     }
   }
 
-  private void handleDeleteVideo(Long chatId, Integer userId, Video replyToVideo) {
+  private void handleDeleteVideo(Long chatId, Long userId, Video replyToVideo) {
     if (replyToVideo != null) {
       Optional<PersistedVideo> storedVideo =
           videosService.getStoredVideo(userId, replyToVideo.fileUniqueId());

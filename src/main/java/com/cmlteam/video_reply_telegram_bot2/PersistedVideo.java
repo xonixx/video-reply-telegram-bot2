@@ -20,14 +20,14 @@ public class PersistedVideo {
   private String fileId;
   private String fileUniqueId;
   private String youtubeId;
-  private int userId;
+  private long userId;
   private int messageId;
   private int size; // size in bytes
   private List<String> keywords;
   @CreatedDate private Instant createDate;
   @LastModifiedDate private Instant lastModifiedDate;
 
-  public PersistedVideo(Video video, int userId, int messageId) {
+  public PersistedVideo(Video video, long userId, int messageId) {
     this(
         null,
         video.fileId(),

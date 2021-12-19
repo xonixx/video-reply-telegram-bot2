@@ -7,11 +7,11 @@ import java.util.Optional;
 
 @Repository
 public interface PersistedVideoRepository extends MongoRepository<PersistedVideo, String> {
-  Optional<PersistedVideo> getFirstByUserIdOrderByLastModifiedDateDesc(int userId);
+  Optional<PersistedVideo> getFirstByUserIdOrderByLastModifiedDateDesc(long userId);
 
-  Optional<PersistedVideo> getFirstByUserIdAndMessageId(int userId, int messageId);
+  Optional<PersistedVideo> getFirstByUserIdAndMessageId(long userId, int messageId);
 
-  Optional<PersistedVideo> getFirstByUserIdAndFileUniqueId(int userId, String fileUniqueId);
+  Optional<PersistedVideo> getFirstByUserIdAndFileUniqueId(long userId, String fileUniqueId);
 
   Optional<PersistedVideo> getFirstByFileUniqueId(String fileUniqueId);
 
