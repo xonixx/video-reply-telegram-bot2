@@ -4,3 +4,5 @@ server:
 
 elk:
   application: video_reply_telegram_bot2-prod
+
+youtube-dl: 'yt-dlp'

@@ -4,10 +4,10 @@ import com.sapher.youtubedl.YoutubeDL;
 import com.sapher.youtubedl.YoutubeDLException;
 import com.sapher.youtubedl.YoutubeDLRequest;
 import com.sapher.youtubedl.YoutubeDLResponse;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
-import java.util.List;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
@@ -15,6 +15,15 @@ import java.util.regex.Pattern;
 public class YoutubeDownloader {
   Pattern youtubeLinkRegex =
       Pattern.compile("^(https?://)?((www\\.)?youtube\\.com|youtu\\.?be)/.+$");
+
+  private final String youtubeDlExecutable;
+
+  public YoutubeDownloader(@Value("${youtube-dl}") String youtubeDlExecutable) {
+    if (youtubeDlExecutable == null) {
+      youtubeDlExecutable = "youtube-dl";
+    }
+    this.youtubeDlExecutable = youtubeDlExecutable;
+  }
 
   boolean isYoutubeLink(String candidate) {
     return youtubeLinkRegex.matcher(candidate).matches();
@@ -24,6 +33,8 @@ public class YoutubeDownloader {
     String directory = "/tmp";
     YoutubeDLRequest request = new YoutubeDLRequest(videoUrl, directory);
     request.setOption("dump-json");
+
+    YoutubeDL.setExecutablePath(youtubeDlExecutable);
 
     YoutubeDLResponse response = YoutubeDL.execute(request);
 
@@ -39,7 +50,7 @@ public class YoutubeDownloader {
 
     String directory = "/tmp";
 
-    String fname = UUID.randomUUID().toString() + ".mp4";
+    String fname = UUID.randomUUID() + ".mp4";
 
     YoutubeDLRequest request = new YoutubeDLRequest(videoUrl, directory);
     //    request.setOption("ignore-errors"); // --ignore-errors
