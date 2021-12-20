@@ -4,6 +4,7 @@ import com.sapher.youtubedl.YoutubeDL;
 import com.sapher.youtubedl.YoutubeDLException;
 import com.sapher.youtubedl.YoutubeDLRequest;
 import com.sapher.youtubedl.YoutubeDLResponse;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -15,6 +16,15 @@ public class YoutubeDownloader {
   Pattern youtubeLinkRegex =
       Pattern.compile("^(https?://)?((www\\.)?youtube\\.com|youtu\\.?be)/.+$");
 
+  private final String youtubeDlExecutable;
+
+  public YoutubeDownloader(@Value("${youtube-dl}") String youtubeDlExecutable) {
+    if (youtubeDlExecutable == null) {
+      youtubeDlExecutable = "youtube-dl";
+    }
+    this.youtubeDlExecutable = youtubeDlExecutable;
+  }
+
   boolean isYoutubeLink(String candidate) {
     return youtubeLinkRegex.matcher(candidate).matches();
   }
@@ -24,7 +34,7 @@ public class YoutubeDownloader {
     YoutubeDLRequest request = new YoutubeDLRequest(videoUrl, directory);
     request.setOption("dump-json");
 
-    YoutubeDL.setExecutablePath("python39 /usr/local/bin/yt-dlp");
+    YoutubeDL.setExecutablePath(youtubeDlExecutable);
 
     YoutubeDLResponse response = YoutubeDL.execute(request);
 

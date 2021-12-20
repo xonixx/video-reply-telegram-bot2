@@ -23,4 +23,6 @@ telegram-bot:
   token: # EXTERNAL
   backup-folder: # EXTERNAL
   max-file-size: 10_000_000 # 10 MB
+
+youtube-dl: 'python3.10 /usr/local/bin/yt-dlp'
   
