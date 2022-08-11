@@ -22,7 +22,7 @@ public class PersistedVideo {
   private String youtubeId;
   private long userId;
   private int messageId;
-  private int size; // size in bytes
+  private long size; // size in bytes
   private List<String> keywords;
   @CreatedDate private Instant createDate;
   @LastModifiedDate private Instant lastModifiedDate;
