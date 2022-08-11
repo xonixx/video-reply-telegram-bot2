@@ -7,7 +7,7 @@ APP_USER=video_reply_telegram_bot2
 DEPLOY_USER=admin
 SERV=cmlteam3.cmlteam.com
 
-export JAVA_HOME=/home/xonix/.sdkman/candidates/java/current
+export JAVA_HOME=/home/xonix/.sdkman/candidates/java/11.0.4.hs-adpt
 
 echo
 echo "BUILD..."
