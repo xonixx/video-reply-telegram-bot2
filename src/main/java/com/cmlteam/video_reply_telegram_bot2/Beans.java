@@ -4,12 +4,15 @@ import com.cmlteam.telegram_bot_common.ErrorReporter;
 import com.cmlteam.telegram_bot_common.JsonHelper;
 import com.cmlteam.telegram_bot_common.LogHelper;
 import com.cmlteam.telegram_bot_common.TelegramBotWrapper;
+import com.cmlteam.video_reply_telegram_bot2.stat.StatCollector;
+import com.cmlteam.video_reply_telegram_bot2.stat.TimeProviderDefault;
 import com.pengrad.telegrambot.TelegramBot;
 import com.pengrad.telegrambot.request.GetMe;
 import com.pengrad.telegrambot.response.GetMeResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.time.Duration;
 import java.util.List;
 
 @Configuration
@@ -86,5 +89,10 @@ public class Beans {
       PersistedVideoRepository persistedVideoRepository,
       SearchStringMatcher searchStringMatcher) {
     return new VideosService(botProperties, persistedVideoRepository, searchStringMatcher);
+  }
+
+  @Bean
+  public StatCollector statCollector() {
+    return new StatCollector(Duration.ofMinutes(5).toMillis(), new TimeProviderDefault());
   }
 }

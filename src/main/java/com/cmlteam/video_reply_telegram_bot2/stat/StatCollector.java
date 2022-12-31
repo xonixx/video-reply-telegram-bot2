@@ -16,7 +16,7 @@ public class StatCollector {
     StatInterval statInterval;
     if (statIntervals.isEmpty()
         || (statInterval = statIntervals.get(statIntervals.size() - 1)).intervalNo != intervalNo) {
-      statInterval = new StatInterval(intervalNo);
+      statIntervals.add(statInterval = new StatInterval(intervalNo));
     }
     statInterval.track(key);
   }
