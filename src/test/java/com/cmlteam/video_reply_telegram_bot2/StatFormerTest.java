@@ -24,4 +24,11 @@ public class StatFormerTest {
     // THEN
     Assertions.assertEquals("Stats:\n1. *user1*: 10\n2. *user2*: 3\n3. *user3*: 1\n", markdown);
   }
+
+  @Test
+  void testMarkdownV2Escaping() {
+    Assertions.assertEquals(
+        "aaa\\_\\*\\[\\]\\(\\)\\~\\`\\>\\#\\+\\-\\=\\|\\{\\}\\.\\!bbb",
+        StatFormer.escapeForMarkdownV2("aaa_*[]()~`>#+-=|{}.!bbb"));
+  }
 }
