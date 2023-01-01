@@ -8,6 +8,7 @@ import com.cmlteam.video_reply_telegram_bot2.stat.StatCollector;
 import com.cmlteam.video_reply_telegram_bot2.stat.TimeProviderDefault;
 import com.pengrad.telegrambot.TelegramBot;
 import com.pengrad.telegrambot.request.GetMe;
+import com.pengrad.telegrambot.request.SendMessage;
 import com.pengrad.telegrambot.response.GetMeResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -24,6 +25,7 @@ public class Beans {
     if (response.user() == null) {
       throw new IllegalArgumentException("bot token is incorrect");
     }
+    telegramBot.execute(new SendMessage(botProperties.getAdminUser(), "Started!"));
     return telegramBot;
   }
 
