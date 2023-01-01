@@ -7,7 +7,7 @@ APP_USER=video_reply_telegram_bot2
 DEPLOY_USER=admin
 SERV=cmlteam3.cmlteam.com
 
-export JAVA_HOME=/home/xonix/.sdkman/candidates/java/11.0.4.hs-adpt
+#export JAVA_HOME=/home/xonix/.sdkman/candidates/java/11.0.4.hs-adpt
 
 echo
 echo "BUILD..."
@@ -34,6 +34,7 @@ then
     sudo update-rc.d $APP defaults 99
 fi
 sudo /etc/init.d/$APP restart
-sleep 20
-tail -n 200 /var/log/$APP.log
+#sleep 20
+#tail -n 200 /var/log/$APP.log
+tail -f /var/log/$APP.log
 "
