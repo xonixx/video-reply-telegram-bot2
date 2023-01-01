@@ -27,7 +27,7 @@ public class StatCollector {
    * @param duration time interval to report stat for
    * @return stat ordered by count desc
    */
-  public Map<String, Integer> reportStat(Duration duration) {
+  public synchronized Map<String, Integer> reportStat(Duration duration) {
     long now = timeProvider.getCurrentTimeMillis();
     long from = now - duration.toMillis();
 
