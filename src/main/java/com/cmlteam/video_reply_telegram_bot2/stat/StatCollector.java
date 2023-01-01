@@ -30,13 +30,16 @@ public class StatCollector {
     long now = timeProvider.getCurrentTimeMillis();
     long from = now - duration.toMillis();
     long fromNo = from / intervalMillis;
+    if (from < 0) { // 2 -> 0; we want -2 -> -1 (not -2 -> 0)
+      fromNo--;
+    }
 
     ListIterator<StatInterval> statBackIterator = statIntervals.listIterator(statIntervals.size());
 
     StatInterval statInterval;
     Map<String, Integer> summed = new HashMap<>();
     while (statBackIterator.hasPrevious()
-        && (statInterval = statBackIterator.previous()).intervalNo >= fromNo) {
+        && (statInterval = statBackIterator.previous()).intervalNo > fromNo) {
       for (Entry<String, Integer> entry : statInterval.counts.entrySet()) {
         String key = entry.getKey();
         int value = entry.getValue();
