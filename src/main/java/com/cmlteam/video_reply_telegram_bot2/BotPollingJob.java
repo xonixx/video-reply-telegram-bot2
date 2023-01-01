@@ -5,6 +5,7 @@ import com.cmlteam.telegram_bot_common.JsonHelper;
 import com.cmlteam.telegram_bot_common.LogHelper;
 import com.cmlteam.telegram_bot_common.TelegramBotWrapper;
 import com.cmlteam.util.Util;
+import com.cmlteam.video_reply_telegram_bot2.stat.StatCollector;
 import com.pengrad.telegrambot.model.*;
 import com.pengrad.telegrambot.model.request.InlineQueryResult;
 import com.pengrad.telegrambot.model.request.InlineQueryResultCachedVideo;
@@ -20,6 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.scheduling.annotation.Scheduled;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -39,6 +41,9 @@ public class BotPollingJob {
   private final int maxFileSize;
   private final YoutubeDownloader youtubeDownloader;
 
+  private final StatCollector statCollector;
+  private final StatFormer statFormer;
+
   private final GetUpdates getUpdates = new GetUpdates();
 
   @Scheduled(fixedRate = 400)
@@ -55,6 +60,8 @@ public class BotPollingJob {
       logHelper.captureLogParams(update);
 
       log.info("Received:\n" + jsonHelper.toPrettyString(update));
+
+      trackUser(update);
 
       Message message = update.message();
 
@@ -101,6 +108,10 @@ public class BotPollingJob {
             videosBackupper.startBackup(userId);
           } else if (BotCommand.REVIVE.is(text)) {
             videosReviver.revive(userId);
+          } else if (BotCommand.STAT.is(text)) {
+            // TODO can we make time interval configurable
+            telegramBot.sendMarkdownV2(
+                chatId, statFormer.formStatMarkdown(statCollector.reportStat(Duration.ofDays(30))));
           }
         } else {
           forwardMessageToAdmin(messageId, chatId);
@@ -114,6 +125,14 @@ public class BotPollingJob {
       }
 
       getUpdates.offset(update.updateId() + 1);
+    }
+  }
+
+  private void trackUser(Update update) {
+    UpdateWrapper updateWrapper = new UpdateWrapper(update);
+    User user = updateWrapper.getUser();
+    if (user != null) {
+      statCollector.track(user.username());
     }
   }
 

@@ -9,7 +9,8 @@ public enum BotCommand {
   START("start", false),
   DELETE("delete", false),
   BACKUP("backup", true),
-  REVIVE("revive", true);
+  REVIVE("revive", true),
+  STAT("stat", true);
 
   private final String cmd;
   private final boolean isAdminCommand;
