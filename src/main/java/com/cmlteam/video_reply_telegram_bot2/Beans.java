@@ -71,7 +71,8 @@ public class Beans {
       JsonHelper jsonHelper,
       LogHelper logHelper,
       YoutubeDownloader youtubeDownloader,
-      StatCollector statCollector) {
+      StatCollector statCollector,
+      StatFormer statFormer) {
     return new BotPollingJob(
         telegramBotWrapper,
         videosService,
@@ -82,7 +83,8 @@ public class Beans {
         botProperties,
         botProperties.getMaxFileSize(),
         youtubeDownloader,
-        statCollector);
+        statCollector,
+        statFormer);
   }
 
   @Bean
@@ -95,6 +97,11 @@ public class Beans {
 
   @Bean
   public StatCollector statCollector() {
-    return new StatCollector(Duration.ofMinutes(5).toMillis(), new TimeProviderDefault());
+    return new StatCollector(Duration.ofMinutes(60).toMillis(), new TimeProviderDefault());
+  }
+
+  @Bean
+  public StatFormer statFormer() {
+    return new StatFormer();
   }
 }

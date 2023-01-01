@@ -21,6 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.scheduling.annotation.Scheduled;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -41,6 +42,7 @@ public class BotPollingJob {
   private final YoutubeDownloader youtubeDownloader;
 
   private final StatCollector statCollector;
+  private final StatFormer statFormer;
 
   private final GetUpdates getUpdates = new GetUpdates();
 
@@ -106,6 +108,10 @@ public class BotPollingJob {
             videosBackupper.startBackup(userId);
           } else if (BotCommand.REVIVE.is(text)) {
             videosReviver.revive(userId);
+          } else if (BotCommand.STAT.is(text)) {
+            // TODO can we make time interval configurable
+            telegramBot.sendMarkdownV2(
+                chatId, statFormer.formStatMarkdown(statCollector.reportStat(Duration.ofDays(30))));
           }
         } else {
           forwardMessageToAdmin(messageId, chatId);
