@@ -1,6 +1,6 @@
 name: Unit Tests
 
-on: [push]
+on: [ push ]
 
 jobs:
   build:
@@ -11,6 +11,7 @@ jobs:
       - name: "Set up JDK"
         uses: actions/setup-java@v3
         with:
+          distribution: "adopt"
           java-version: 17
       - name: "cache maven deps"
         uses: actions/cache@v3
