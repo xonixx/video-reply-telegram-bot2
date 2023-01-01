@@ -6,7 +6,7 @@
         <appender-ref ref="CONSOLE"/>
     </root>
 
-    <springProfile name="prod, test">
+    <!--<springProfile name="prod, test">
         <springProperty scope="local" name="elkHost" source="elk.host"/>
         <springProperty scope="local" name="elkPort" source="elk.port"/>
         <springProperty scope="context" name="application" source="elk.application"/>
@@ -17,7 +17,7 @@
             <keepAliveDuration>5 minutes</keepAliveDuration>
             <reconnectionDelay>5 seconds</reconnectionDelay>
 
-            <!-- encoder is required -->
+            &lt;!&ndash; encoder is required &ndash;&gt;
             <encoder class="net.logstash.logback.encoder.LogstashEncoder">
                 <fieldNames>
                     <level>priority</level>
@@ -25,9 +25,9 @@
             </encoder>
         </appender>
 
-        <!--<root level="DEBUG">-->
+        &lt;!&ndash;<root level="DEBUG">&ndash;&gt;
         <root>
             <appender-ref ref="elk"/>
         </root>
-    </springProfile>
+    </springProfile>-->
 </configuration>
