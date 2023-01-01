@@ -13,11 +13,12 @@ public class StatCollector {
   private final TimeProvider timeProvider;
 
   public synchronized void track(String key) {
-    long intervalNo = timeProvider.getCurrentTimeMillis() / intervalMillis;
+    long intervalStartMillis = timeProvider.getCurrentTimeMillis();
     StatInterval statInterval;
     if (statIntervals.isEmpty()
-        || (statInterval = statIntervals.get(statIntervals.size() - 1)).intervalNo != intervalNo) {
-      statIntervals.add(statInterval = new StatInterval(intervalNo));
+        || (statInterval = statIntervals.get(statIntervals.size() - 1)).intervalStartMillis
+            < intervalStartMillis - intervalMillis) {
+      statIntervals.add(statInterval = new StatInterval(intervalStartMillis));
     }
     statInterval.track(key);
   }
@@ -29,17 +30,14 @@ public class StatCollector {
   public Map<String, Integer> reportStat(Duration duration) {
     long now = timeProvider.getCurrentTimeMillis();
     long from = now - duration.toMillis();
-    long fromNo = from / intervalMillis;
-    if (from < 0) { // 2 -> 0; we want -2 -> -1 (not -2 -> 0)
-      fromNo--;
-    }
 
     ListIterator<StatInterval> statBackIterator = statIntervals.listIterator(statIntervals.size());
 
-    StatInterval statInterval;
     Map<String, Integer> summed = new HashMap<>();
+    StatInterval statInterval;
+
     while (statBackIterator.hasPrevious()
-        && (statInterval = statBackIterator.previous()).intervalNo > fromNo) {
+        && (statInterval = statBackIterator.previous()).intervalStartMillis > from) {
       for (Entry<String, Integer> entry : statInterval.counts.entrySet()) {
         String key = entry.getKey();
         int value = entry.getValue();

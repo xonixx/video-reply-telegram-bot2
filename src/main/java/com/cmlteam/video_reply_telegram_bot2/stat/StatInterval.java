@@ -2,13 +2,13 @@ package com.cmlteam.video_reply_telegram_bot2.stat;
 
 import lombok.RequiredArgsConstructor;
 
+import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 @RequiredArgsConstructor
-public class StatInterval {
-  final long intervalNo;
-  final Map<String, Integer> counts = new ConcurrentHashMap<>();
+class StatInterval {
+  final long intervalStartMillis;
+  final Map<String, Integer> counts = new HashMap<>();
 
   void track(String key) {
     counts.put(key, counts.getOrDefault(key, 0) + 1);

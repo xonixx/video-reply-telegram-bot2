@@ -20,8 +20,7 @@ public class StatCollectorTests {
   void test1(long initialTime) {
     // GIVEN
 
-    TimeProviderForTest timeProviderForTest =
-        new TimeProviderForTest(/*Duration.ofDays(100).toMillis()*/ initialTime);
+    TimeProviderForTest timeProviderForTest = new TimeProviderForTest(initialTime);
     long duration5Min = Duration.ofMinutes(5).toMillis();
     StatCollector statCollector = new StatCollector(duration5Min, timeProviderForTest);
 
@@ -32,13 +31,13 @@ public class StatCollectorTests {
     statCollector.track("user3");
     statCollector.track("user4");
 
-    timeProviderForTest.increment(duration5Min);
+    timeProviderForTest.increment(duration5Min + 1);
 
     statCollector.track("user1");
     statCollector.track("user3");
     statCollector.track("user4");
 
-    timeProviderForTest.increment(duration5Min);
+    timeProviderForTest.increment(duration5Min + 1);
 
     statCollector.track("user3");
     statCollector.track("user3");
@@ -46,13 +45,13 @@ public class StatCollectorTests {
 
     // THEN
 
-    /*    Assertions.assertEquals(
+    Assertions.assertEquals(
         List.of("user3:2", "user4:1"),
         entriesAsList(statCollector.reportStat(Duration.ofMinutes(4))));
 
     Assertions.assertEquals(
         List.of("user3:3", "user4:2", "user1:1"),
-        entriesAsList(statCollector.reportStat(Duration.ofMinutes(6))));*/
+        entriesAsList(statCollector.reportStat(Duration.ofMinutes(6))));
 
     Assertions.assertEquals(
         List.of("user3:4", "user4:3", "user1:2", "user2:1"),
