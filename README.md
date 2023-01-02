@@ -1,6 +1,7 @@
 [![Stand With Ukraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/banner-direct-single.svg)](https://stand-with-ukraine.pp.ua)
 
 # Video Reply Telegram Bot
+[![Unit Tests](https://github.com/xonixx/video-reply-telegram-bot2/actions/workflows/run-tests.yml/badge.svg)](https://github.com/xonixx/video-reply-telegram-bot2/actions/workflows/run-tests.yml)
 
 Telegram [inline bot](https://core.telegram.org/bots/inline) to allow reply with video-meme.
 Like [t.me/gif](https://t.me/gif) but for videos.
