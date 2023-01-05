@@ -20,5 +20,5 @@ jobs:
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-maven-
-      - name: "Run tests with Maven"
-        run: ./mvnw -B test
+      - name: "Run tests with Maven & Sonar"
+        run: ./mvnw -B test sonar:sonar -Dsonar.login=${{ secrets.SONAR_LOGIN }}
