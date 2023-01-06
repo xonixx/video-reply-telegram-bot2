@@ -15,6 +15,6 @@ jobs:
         with:
           distribution: "temurin"
           java-version: 17
-          cache: 'maven'
+          cache: "maven"
       - name: "Run tests with Maven & Sonar"
         run: ./mvnw --batch-mode -Pcoverage verify sonar:sonar -Dsonar.login=${{ secrets.SONAR_LOGIN }}
