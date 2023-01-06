@@ -21,4 +21,4 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
       - name: "Run tests with Maven & Sonar"
-        run: ./mvnw -B test sonar:sonar -Pcoverage -Dsonar.login=${{ secrets.SONAR_LOGIN }}
+        run: ./mvnw -B -Pcoverage verify sonar:sonar -Dsonar.login=${{ secrets.SONAR_LOGIN }}
