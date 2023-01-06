@@ -23,4 +23,4 @@ jobs:
 #          restore-keys: |
 #            ${{ runner.os }}-maven-
       - name: "Run tests with Maven & Sonar"
-        run: MAVEN_CLI_OPTS='--batch-mode' ./mvnw -Pcoverage verify sonar:sonar -Dsonar.login=${{ secrets.SONAR_LOGIN }}
+        run: ./mvnw --batch-mode -Pcoverage verify sonar:sonar -Dsonar.login=${{ secrets.SONAR_LOGIN }}
