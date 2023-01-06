@@ -15,12 +15,12 @@ jobs:
         with:
           distribution: "temurin"
           java-version: 17
-#      - name: "cache maven deps"
-#        uses: actions/cache@v3
-#        with:
-#          path: ~/.m2/repository
-#          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-#          restore-keys: |
-#            ${{ runner.os }}-maven-
+      - name: "cache maven deps"
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
       - name: "Run tests with Maven & Sonar"
         run: ./mvnw --batch-mode -Pcoverage verify sonar:sonar -Dsonar.login=${{ secrets.SONAR_LOGIN }}
