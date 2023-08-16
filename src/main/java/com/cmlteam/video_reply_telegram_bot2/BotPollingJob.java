@@ -124,34 +124,38 @@ public class BotPollingJob {
           handleInlineQuery(update, inlineQuery);
         }
       } catch (Exception ex) {
-        try {
-          UpdateWrapper updateWrapper = new UpdateWrapper(update);
-          User user = updateWrapper.getUser();
-          if (user != null) {
-            String res =
-                "<b>Exc</b> "
-                    + ex
-                    + "\n<pre>"
-                    + Util.trim(ExceptionUtils.getStackTrace(ex), 300)
-                    + "</pre>";
-            Long chatId = update.message().chat().id();
-            // notify admin
-            telegramBot.execute(
-                new SendMessage(adminUserChecker.getAdminUser(), Emoji.ERROR.msg(res))
-                    .parseMode(ParseMode.HTML));
-            if (!adminUserChecker.isAdmin(user)) {
-              telegramBot.sendText(
-                  chatId,
-                  Emoji.ERROR.msg(
-                      "There was an unexpected error processing your request. Please retry later."));
-            }
-          }
-        } catch (Exception ex1) {
-          log.error("Unhandled exception", ex1);
-        }
+        handleUnhandledException(update, ex);
       }
 
       getUpdates.offset(update.updateId() + 1);
+    }
+  }
+
+  private void handleUnhandledException(Update update, Exception ex) {
+    try {
+      UpdateWrapper updateWrapper = new UpdateWrapper(update);
+      User user = updateWrapper.getUser();
+      if (user != null) {
+        String res =
+            "<b>Exc</b> "
+                + ex
+                + "\n<pre>"
+                + Util.trim(ExceptionUtils.getStackTrace(ex), 300)
+                + "</pre>";
+        Long chatId = update.message().chat().id();
+        // notify admin
+        telegramBot.execute(
+            new SendMessage(adminUserChecker.getAdminUser(), Emoji.ERROR.msg(res))
+                .parseMode(ParseMode.HTML));
+        if (!adminUserChecker.isAdmin(user)) {
+          telegramBot.sendText(
+              chatId,
+              Emoji.ERROR.msg(
+                  "There was an unexpected error processing your request. Please retry later."));
+        }
+      }
+    } catch (Exception ex1) {
+      log.error("Unhandled exception", ex1);
     }
   }
 
