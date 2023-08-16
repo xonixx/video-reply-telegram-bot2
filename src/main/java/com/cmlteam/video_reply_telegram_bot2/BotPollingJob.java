@@ -9,24 +9,22 @@ import com.cmlteam.video_reply_telegram_bot2.stat.StatCollector;
 import com.pengrad.telegrambot.model.*;
 import com.pengrad.telegrambot.model.request.InlineQueryResult;
 import com.pengrad.telegrambot.model.request.InlineQueryResultCachedVideo;
-import com.pengrad.telegrambot.request.AnswerInlineQuery;
-import com.pengrad.telegrambot.request.ForwardMessage;
-import com.pengrad.telegrambot.request.GetUpdates;
-import com.pengrad.telegrambot.request.SendVideo;
+import com.pengrad.telegrambot.model.request.ParseMode;
+import com.pengrad.telegrambot.request.*;
 import com.pengrad.telegrambot.response.GetUpdatesResponse;
 import com.pengrad.telegrambot.response.SendResponse;
 import com.sapher.youtubedl.YoutubeDLException;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.scheduling.annotation.Scheduled;
-
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.springframework.scheduling.annotation.Scheduled;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -57,71 +55,100 @@ public class BotPollingJob {
     List<Update> updates = updatesResponse.updates();
 
     for (Update update : updates) {
-      logHelper.captureLogParams(update);
+      try {
+        logHelper.captureLogParams(update);
 
-      log.info("Received:\n" + jsonHelper.toPrettyString(update));
+        log.info("Received:\n" + jsonHelper.toPrettyString(update));
 
-      trackUser(update);
+        trackUser(update);
 
-      Message message = update.message();
+        Message message = update.message();
 
-      if (message != null) {
-        Long chatId = message.chat().id();
-        Integer messageId = message.messageId();
+        if (message != null) {
+          Long chatId = message.chat().id();
+          Integer messageId = message.messageId();
 
-        String text = message.text();
-        Video video = message.video();
-        User user = message.from();
-        Long userId = user.id();
-        Message replyToMessage = message.replyToMessage();
-        Video replyToVideo = replyToMessage == null ? null : replyToMessage.video();
+          String text = message.text();
+          Video video = message.video();
+          User user = message.from();
+          Long userId = user.id();
+          Message replyToMessage = message.replyToMessage();
+          Video replyToVideo = replyToMessage == null ? null : replyToMessage.video();
 
-        if (BotCommand.START.is(text)) {
-          telegramBot.sendText(
-              chatId,
-              "This is inline bot to allow reply with video-meme!\n"
-                  + "More instructions: https://github.com/xonixx/video-reply-telegram-bot2/blob/master/README.md");
-        } else if (BotCommand.DELETE.is(text)) {
-          handleDeleteVideo(chatId, userId, replyToVideo);
-        } else if (video != null) {
-          if (replyToVideo != null) {
-            handleReplaceVideo(chatId, userId, messageId, replyToVideo, video);
+          if (BotCommand.START.is(text)) {
+            telegramBot.sendText(
+                chatId,
+                "This is inline bot to allow reply with video-meme!\n"
+                    + "More instructions: https://github.com/xonixx/video-reply-telegram-bot2/blob/master/README.md");
+          } else if (BotCommand.DELETE.is(text)) {
+            handleDeleteVideo(chatId, userId, replyToVideo);
+          } else if (video != null) {
+            if (replyToVideo != null) {
+              handleReplaceVideo(chatId, userId, messageId, replyToVideo, video);
+            } else {
+              handleUploadVideo(chatId, userId, messageId, video);
+            }
+          } else if (StringUtils.isNotBlank(text)) {
+            if (youtubeDownloader.isYoutubeLink(text)) {
+              handleYoutubeLink(chatId, userId, text);
+            } else {
+              handleSetKeywords(chatId, userId, replyToVideo, text);
+            }
           } else {
-            handleUploadVideo(chatId, userId, messageId, video);
+            telegramBot.sendText(
+                chatId,
+                Emoji.WARN.msg(
+                    "The uploaded document doesn't look like .MP4 video. "
+                        + "Please try again with other file."));
           }
-        } else if (StringUtils.isNotBlank(text)) {
-          if (youtubeDownloader.isYoutubeLink(text)) {
-            handleYoutubeLink(chatId, userId, text);
+
+          if (adminUserChecker.isAdmin(user)) {
+            if (BotCommand.BACKUP.is(text)) {
+              videosBackupper.startBackup(userId);
+            } else if (BotCommand.REVIVE.is(text)) {
+              videosReviver.revive(userId);
+            } else if (BotCommand.STAT.is(text)) {
+              // TODO can we make time interval configurable
+              telegramBot.sendMarkdownV2(
+                  chatId,
+                  statFormer.formStatMarkdown(statCollector.reportStat(Duration.ofDays(30))));
+            }
           } else {
-            handleSetKeywords(chatId, userId, replyToVideo, text);
+            forwardMessageToAdmin(messageId, chatId);
           }
-        } else {
-          telegramBot.sendText(
-              chatId,
-              Emoji.WARN.msg(
-                  "The uploaded document doesn't look like .MP4 video. "
-                      + "Please try again with other file."));
         }
 
-        if (adminUserChecker.isAdmin(user)) {
-          if (BotCommand.BACKUP.is(text)) {
-            videosBackupper.startBackup(userId);
-          } else if (BotCommand.REVIVE.is(text)) {
-            videosReviver.revive(userId);
-          } else if (BotCommand.STAT.is(text)) {
-            // TODO can we make time interval configurable
-            telegramBot.sendMarkdownV2(
-                chatId, statFormer.formStatMarkdown(statCollector.reportStat(Duration.ofDays(30))));
-          }
-        } else {
-          forwardMessageToAdmin(messageId, chatId);
+        InlineQuery inlineQuery = update.inlineQuery();
+
+        if (inlineQuery != null) {
+          handleInlineQuery(update, inlineQuery);
         }
-      }
-
-      InlineQuery inlineQuery = update.inlineQuery();
-
-      if (inlineQuery != null) {
-        handleInlineQuery(update, inlineQuery);
+      } catch (Exception ex) {
+        try {
+          UpdateWrapper updateWrapper = new UpdateWrapper(update);
+          User user = updateWrapper.getUser();
+          if (user != null) {
+            String res =
+                "<b>Exc</b> "
+                    + ex
+                    + "\n<pre>"
+                    + Util.trim(ExceptionUtils.getStackTrace(ex), 300)
+                    + "</pre>";
+            Long chatId = update.message().chat().id();
+            // notify admin
+            telegramBot.execute(
+                new SendMessage(adminUserChecker.getAdminUser(), Emoji.ERROR.msg(res))
+                    .parseMode(ParseMode.HTML));
+            if (!adminUserChecker.isAdmin(user)) {
+              telegramBot.sendText(
+                  chatId,
+                  Emoji.ERROR.msg(
+                      "There was an unexpected error processing your request. Please retry later."));
+            }
+          }
+        } catch (Exception ex1) {
+          log.error("Unhandled exception", ex1);
+        }
       }
 
       getUpdates.offset(update.updateId() + 1);
