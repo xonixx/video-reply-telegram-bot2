@@ -124,6 +124,7 @@ public class BotPollingJob {
           handleInlineQuery(update, inlineQuery);
         }
       } catch (Exception ex) {
+        log.error("Unhandled exception", ex);
         handleUnhandledException(update, ex);
       }
 
@@ -155,7 +156,7 @@ public class BotPollingJob {
         }
       }
     } catch (Exception ex1) {
-      log.error("Unhandled exception", ex1);
+      log.error("Unhandled exception #2", ex1);
     }
   }
 
@@ -223,9 +224,14 @@ public class BotPollingJob {
                     telegramBot.execute(
                         new SendVideo(chatId, youtubeVideoFormat.getUrl()).caption(title));
                 log.info("Response:\n" + jsonHelper.toPrettyString(response));
-                Message message = response.message();
-                handleUploadYoutubeVideo(
-                    chatId, userId, message.messageId(), message.video(), title, youtubeId);
+                if (response.isOk()) {
+                  Message message = response.message();
+                  handleUploadYoutubeVideo(
+                      chatId, userId, message.messageId(), message.video(), title, youtubeId);
+                } else {
+                  telegramBot.sendText(
+                      chatId, Emoji.ERROR.msg("Failed uploading YouTube video to Telegram"));
+                }
               }
             } else {
               telegramBot.sendText(chatId, Emoji.ERROR.msg("No appropriate video format!"));
