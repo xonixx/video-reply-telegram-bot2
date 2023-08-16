@@ -220,9 +220,10 @@ public class BotPollingJob {
               YoutubeVideoFormat youtubeVideoFormat = appropriateFormatOptional.get();
               if (checkFileSizeOrSendErrorMsg(chatId, youtubeVideoFormat.getFilesize())) {
                 String title = videoInfo.getTitle();
+                String url = youtubeVideoFormat.getUrl();
+                log.info("YouTube URL: {}", url);
                 SendResponse response =
-                    telegramBot.execute(
-                        new SendVideo(chatId, youtubeVideoFormat.getUrl()).caption(title));
+                    telegramBot.execute(new SendVideo(chatId, url).caption(title));
                 log.info("Response:\n" + jsonHelper.toPrettyString(response));
                 if (response.isOk()) {
                   Message message = response.message();
