@@ -206,38 +206,40 @@ public class BotPollingJob {
       String youtubeId = videoInfo.getId();
       Optional<PersistedVideo> videoByYoutubeId =
           videosService.getStoredVideoByYoutubeId(youtubeId);
-      videoByYoutubeId.ifPresentOrElse(
-          existingVideo ->
-              telegramBot.sendText(
-                  chatId,
-                  Emoji.WARN.msg(
-                      " The same Youtube video already exists with keywords: "
-                          + existingVideo.getKeywordsString())),
-          () -> {
-            Optional<YoutubeVideoFormat> appropriateFormatOptional =
-                videoInfo.getAppropriateFormat();
-            if (appropriateFormatOptional.isPresent()) {
-              YoutubeVideoFormat youtubeVideoFormat = appropriateFormatOptional.get();
-              if (checkFileSizeOrSendErrorMsg(chatId, youtubeVideoFormat.getFilesize())) {
-                String title = videoInfo.getTitle();
-                String url = youtubeVideoFormat.getUrl();
-                log.info("YouTube URL: {}", url);
-                SendResponse response =
-                    telegramBot.execute(new SendVideo(chatId, url).caption(title));
-                log.info("Response:\n" + jsonHelper.toPrettyString(response));
-                if (response.isOk()) {
-                  Message message = response.message();
-                  handleUploadYoutubeVideo(
-                      chatId, userId, message.messageId(), message.video(), title, youtubeId);
-                } else {
-                  telegramBot.sendText(
-                      chatId, Emoji.ERROR.msg("Failed uploading YouTube video to Telegram"));
-                }
-              }
-            } else {
-              telegramBot.sendText(chatId, Emoji.ERROR.msg("No appropriate video format!"));
-            }
-          });
+      if (videoByYoutubeId.isPresent()) {
+        telegramBot.sendText(
+            chatId,
+            Emoji.WARN.msg(
+                " The same Youtube video already exists with keywords: "
+                    + videoByYoutubeId.get().getKeywordsString()));
+      } else {
+        Optional<YoutubeVideoFormat> appropriateFormatOptional = videoInfo.getAppropriateFormat();
+        if (appropriateFormatOptional.isPresent()) {
+          YoutubeVideoFormat youtubeVideoFormat = appropriateFormatOptional.get();
+          if (checkFileSizeOrSendErrorMsg(chatId, youtubeVideoFormat.getFilesize())) {
+            String title = videoInfo.getTitle();
+            //                String url = youtubeVideoFormat.getUrl();
+            //                log.info("YouTube URL: {}", url);
+            youtubeDownloader.download(
+                youtubeLink,
+                (file, elapsedTime) -> {
+                  SendResponse response =
+                      telegramBot.execute(new SendVideo(chatId, file).caption(title));
+                  log.info("Response:\n" + jsonHelper.toPrettyString(response));
+                  if (response.isOk()) {
+                    Message message = response.message();
+                    handleUploadYoutubeVideo(
+                        chatId, userId, message.messageId(), message.video(), title, youtubeId);
+                  } else {
+                    telegramBot.sendText(
+                        chatId, Emoji.ERROR.msg("Failed uploading YouTube video to Telegram"));
+                  }
+                });
+          }
+        } else {
+          telegramBot.sendText(chatId, Emoji.ERROR.msg("No appropriate video format!"));
+        }
+      }
     } catch (YoutubeDLException e) {
       telegramBot.sendText(chatId, Emoji.ERROR.msg(e.getMessage()));
     }
