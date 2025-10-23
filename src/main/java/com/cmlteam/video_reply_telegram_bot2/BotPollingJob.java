@@ -37,6 +37,7 @@ public class BotPollingJob {
   private final LogHelper logHelper;
   private final AdminUserChecker adminUserChecker;
   private final int maxFileSize;
+  private final int adminMaxFileSize;
   private final YoutubeDownloader youtubeDownloader;
 
   private final StatCollector statCollector;
@@ -287,12 +288,13 @@ public class BotPollingJob {
   }
 
   private boolean checkFileSizeOrSendErrorMsg(Long chatId, long fileSize) {
-    if (fileSize > maxFileSize) {
+    long realMaxFileSize = adminUserChecker.isAdmin(chatId) ? adminMaxFileSize : maxFileSize;
+    if (fileSize > realMaxFileSize) {
       telegramBot.sendText(
           chatId,
           Emoji.WARN.msg(
               "Sorry, video is too big! Only videos up to "
-                  + Util.humanReadableByteCount(maxFileSize, true)
+                  + Util.humanReadableByteCount(realMaxFileSize, true)
                   + " are allowed, yours is "
                   + Util.humanReadableByteCount(fileSize, true)
                   + ". Please try again with other file."));

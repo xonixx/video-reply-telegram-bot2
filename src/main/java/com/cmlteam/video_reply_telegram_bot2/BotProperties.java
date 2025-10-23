@@ -21,6 +21,7 @@ public class BotProperties implements AdminUserChecker {
   private @NotBlank String token;
   private @NotBlank String backupFolder;
   private @NotNull Integer maxFileSize;
+  private @NotNull Integer maxAdminFileSize;
 
   @Override
   public boolean isAdmin(long userId) {
@@ -29,6 +30,6 @@ public class BotProperties implements AdminUserChecker {
 
   @Override
   public boolean isAdmin(User user) {
-    return isAdmin(user.id().longValue());
+    return isAdmin(user.id());
   }
 }

@@ -88,6 +88,7 @@ public class Beans {
         logHelper,
         botProperties,
         botProperties.getMaxFileSize(),
+        botProperties.getMaxAdminFileSize(),
         youtubeDownloader,
         statCollector,
         statFormer);
