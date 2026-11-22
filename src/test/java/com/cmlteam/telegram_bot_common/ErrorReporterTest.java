@@ -39,11 +39,11 @@ class ErrorReporterTest {
 
     assertThat(sentMessage())
         .startsWith("Received 4 errors during last ")
-        .containsOnlyOnce("\nfrom which 2 are 429 Too Many Requests: retry after X\n")
+        .containsOnlyOnce("\nfrom which 2 are 429 Too Many Requests: retry after 5\n")
         .contains(
             "<b>Err #1</b> 500 Internal Server Error\n<b>TG req</b><pre>other request</pre>",
             "<b>Err #2</b> 429 Too Many Requests\n")
-        .doesNotContain("retry after 5", "retry after 12", "retry request");
+        .doesNotContain("retry after 12", "retry request");
   }
 
   @Test
@@ -59,7 +59,7 @@ class ErrorReporterTest {
     String message = sentMessage();
     assertThat(message)
         .startsWith("Received 21 errors during last ")
-        .containsOnlyOnce("\nfrom which 1 are 429 Too Many Requests: retry after X\n")
+        .containsOnlyOnce("\nfrom which 1 are 429 Too Many Requests: retry after 5\n")
         .doesNotContain("<b>Err #20</b>");
     assertThat(message.length()).isLessThanOrEqualTo(4096);
   }

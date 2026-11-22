@@ -29,9 +29,8 @@ public class ErrorReporter {
   //  public static final int ERROR_REPORT_INTERVAL = 5000; // test
 
   private static final int MAX_MSG_LEN = 4096;
-  private static final String RETRY_AFTER_PREFIX = "Too Many Requests: retry after ";
   private static final Pattern RETRY_AFTER_DESCRIPTION =
-      Pattern.compile(RETRY_AFTER_PREFIX + "[0-9]+");
+      Pattern.compile("Too Many Requests: retry after [0-9]+");
 
   void reportError(ErrorData error) {
     errors.add(error);
@@ -49,8 +48,8 @@ public class ErrorReporter {
     }
 
     int total = batch.size();
-    batch.removeIf(ErrorReporter::isRetryAfterError);
-    int retryAfterCount = total - batch.size();
+    ErrorData firstRetryAfterError =
+        batch.stream().filter(ErrorReporter::isRetryAfterError).findFirst().orElse(null);
 
     StringBuilder msg = new StringBuilder();
     msg.append("Received ")
@@ -59,12 +58,12 @@ public class ErrorReporter {
         .append(Util.renderDuration(ERROR_REPORT_INTERVAL))
         .append(":");
 
-    if (retryAfterCount > 0) {
+    if (firstRetryAfterError != null) {
+      batch.removeIf(ErrorReporter::isRetryAfterError);
       msg.append("\nfrom which ")
-          .append(retryAfterCount)
+          .append(total - batch.size())
           .append(" are 429 ")
-          .append(RETRY_AFTER_PREFIX)
-          .append("X");
+          .append(firstRetryAfterError.getDescription());
     }
 
     int i = 0;
