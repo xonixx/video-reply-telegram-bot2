@@ -15,7 +15,6 @@ import org.springframework.scheduling.annotation.Scheduled;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.regex.Pattern;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -29,8 +28,6 @@ public class ErrorReporter {
   //  public static final int ERROR_REPORT_INTERVAL = 5000; // test
 
   private static final int MAX_MSG_LEN = 4096;
-  private static final Pattern RETRY_AFTER_DESCRIPTION =
-      Pattern.compile("Too Many Requests: retry after [0-9]+");
 
   void reportError(ErrorData error) {
     errors.add(error);
@@ -91,10 +88,8 @@ public class ErrorReporter {
   }
 
   private static boolean isRetryAfterError(ErrorData error) {
-    String description = error.getDescription();
     return error.getErrorCode() == 429
-        && description != null
-        && RETRY_AFTER_DESCRIPTION.matcher(description).matches();
+        && StringUtils.contains(error.getDescription(), "Too Many Requests: retry after ");
   }
 
   private void renderError(int errIdx, StringBuilder msg, ErrorData error) {
