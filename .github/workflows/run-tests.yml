@@ -8,13 +8,11 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0 # needed for blame information for Sonar
       - name: "Set up JDK"
         uses: actions/setup-java@v3
         with:
           distribution: "temurin"
           java-version: 17
           cache: "maven"
-      - name: "Run tests with Maven & Sonar"
-        run: ./mvnw --batch-mode -Pcoverage verify sonar:sonar -Dsonar.login=${{ secrets.SONAR_LOGIN }}
+      - name: "Run tests with Maven"
+        run: ./mvnw --batch-mode verify
