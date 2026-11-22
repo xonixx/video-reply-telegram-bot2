@@ -15,6 +15,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.Pattern;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -28,6 +29,9 @@ public class ErrorReporter {
   //  public static final int ERROR_REPORT_INTERVAL = 5000; // test
 
   private static final int MAX_MSG_LEN = 4096;
+  private static final String RETRY_AFTER_PREFIX = "Too Many Requests: retry after ";
+  private static final Pattern RETRY_AFTER_DESCRIPTION =
+      Pattern.compile(RETRY_AFTER_PREFIX + "[0-9]+");
 
   void reportError(ErrorData error) {
     errors.add(error);
@@ -35,45 +39,63 @@ public class ErrorReporter {
 
   @Scheduled(fixedRate = ERROR_REPORT_INTERVAL)
   void reportJob() {
-    if (!errors.isEmpty()) {
-      try {
-        StringBuilder msg = new StringBuilder();
+    List<ErrorData> batch;
+    synchronized (errors) {
+      if (errors.isEmpty()) {
+        return;
+      }
+      batch = new ArrayList<>(errors);
+      errors.clear();
+    }
 
-        msg.append("Received ")
-            .append(errors.size())
-            .append(" errors during last ")
-            .append(Util.renderDuration(ERROR_REPORT_INTERVAL))
-            .append(":");
+    int total = batch.size();
+    batch.removeIf(ErrorReporter::isRetryAfterError);
+    int retryAfterCount = total - batch.size();
 
-        int i = 0;
-        for (ErrorData error : errors) {
-          msg.append("\n");
+    StringBuilder msg = new StringBuilder();
+    msg.append("Received ")
+        .append(total)
+        .append(" errors during last ")
+        .append(Util.renderDuration(ERROR_REPORT_INTERVAL))
+        .append(":");
 
-          StringBuilder errSb = new StringBuilder();
-          renderError(++i, errSb, error);
+    if (retryAfterCount > 0) {
+      msg.append("\nfrom which ")
+          .append(retryAfterCount)
+          .append(" are 429 ")
+          .append(RETRY_AFTER_PREFIX)
+          .append("X");
+    }
 
-          if (msg.length() + errSb.length() > MAX_MSG_LEN) {
-            break;
-          } else {
-            msg.append(errSb);
-          }
-        }
+    int i = 0;
+    for (ErrorData error : batch) {
+      StringBuilder errSb = new StringBuilder();
+      renderError(++i, errSb, error);
 
-        for (Long adminUser : adminUsers) {
-          SendResponse response =
-              telegramBot.execute(
-                  new SendMessage(adminUser, msg.toString()).parseMode(ParseMode.HTML));
-          if (!response.isOk()) {
-            log.error(
-                "Error sending logs to admin: {}: {}",
-                response.errorCode(),
-                response.description());
-          }
-        }
-      } finally {
-        errors.clear();
+      if (msg.length() + 1 + errSb.length() > MAX_MSG_LEN) {
+        break;
+      }
+      msg.append('\n').append(errSb);
+    }
+
+    for (Long adminUser : adminUsers) {
+      SendResponse response =
+          telegramBot.execute(
+              new SendMessage(adminUser, msg.toString()).parseMode(ParseMode.HTML));
+      if (!response.isOk()) {
+        log.error(
+            "Error sending logs to admin: {}: {}",
+            response.errorCode(),
+            response.description());
       }
     }
+  }
+
+  private static boolean isRetryAfterError(ErrorData error) {
+    String description = error.getDescription();
+    return error.getErrorCode() == 429
+        && description != null
+        && RETRY_AFTER_DESCRIPTION.matcher(description).matches();
   }
 
   private void renderError(int errIdx, StringBuilder msg, ErrorData error) {
